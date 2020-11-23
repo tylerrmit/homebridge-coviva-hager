@@ -448,7 +448,6 @@ class Session {
 
     this.log.info('Opening WebSocket connection to Coviva API');
 
-    //this.ws = new ws(this.ws_url, 'v2');
     this.ws = new WebSocket(this.ws_url, 'v2');
 
     const ready = new Promise((resolve, reject) => {
@@ -512,7 +511,8 @@ class Session {
   // have been parsed, and are waiting for them in this._cachedDevices
   public async getDeviceList(): Promise<Coviva_Node[]> {
     if (!this.hasToken()) {
-      throw new Error('No valid token');
+      this.log.warn('No valid token on getDeviceList()');
+      await this.login();
     }
 
     // Make a promise that is controlled by this._pc_devicelist
@@ -684,6 +684,8 @@ class Session {
       let prev_node:      Coviva_Node;
       let prev_attribute: Coviva_Attribute;
 
+      let genuine_update = false;
+
       // Loop through devices...
       loop1:
       for (let i = 0; i < this._cachedDevices.length; i++) {
@@ -708,9 +710,19 @@ class Session {
               if (this._cachedDevices[i].profile == 15) {
                 // Parse state and brightness
                 if      (new_attribute.type == 1) {
-                  this._cachedDevices[i].data.state = (new_attribute.current_value == 0) ? false : true;
+                  const new_value = (new_attribute.current_value == 0) ? false : true;
+
+                  if (this._cachedDevices[i].data.state != new_value) {
+                    genuine_update = true;
+                  }
+
+                  this._cachedDevices[i].data.state = new_value;
                 }
                 else if (new_attribute.type == 2) {
+                  if (this._cachedDevices[i].data.brightness != new_attribute.current_value) {
+                    genuine_update = true;
+                  }
+
                   this._cachedDevices[i].data.brightness = new_attribute.current_value;
                 }
               }
@@ -721,7 +733,9 @@ class Session {
 
               // Potential performance improvement: Check if the status REALLY changed
               // before bothering HomeKit?  I'm assuming it's not a bother
-              this.platform.refreshDeviceStates([this._cachedDevices[i]]);
+              if (genuine_update) {
+                this.platform.refreshDeviceStates([this._cachedDevices[i]]);
+              }
 
               // We found what we were looking for, so break out of the loops
               break loop1;
@@ -870,7 +884,8 @@ export class CovivaAPI {
 
   public async discoverDevices(): Promise<Coviva_Node[]> {
     if (!this.session?.hasValidToken()) {
-      throw new Error('No valid token');
+      this.log.warn('No valid token on discoverDevices()');
+      await this.session?.login();
     }
 
     // Ask the Session to send the command to get the device list, and wait for the Promise Controller
@@ -884,7 +899,8 @@ export class CovivaAPI {
   // has been cached by the Session
   public async getDeviceState<T>(deviceId: string): Promise<CovivaDeviceState & T | undefined> {
     if (!this.session?.hasValidToken()) {
-      throw new Error('No valid token');
+      this.log.warn('No valid token on getDeviceState()');
+      await this.session?.login();
     }
  
     // Find the device by reference
@@ -903,7 +919,8 @@ export class CovivaAPI {
   public async setDeviceState<Method extends CovivaApiMethod>
   (deviceId: string, method: Method, payload: CovivaApiPayload<Method>): Promise<void> {
     if (!this.session?.hasValidToken()) {
-      throw new Error('No valid token');
+      this.log.warn('No valid token on setDeviceState()');
+      await this.session?.login();
     }
 
     // We want to send the Coviva API a command like this:
