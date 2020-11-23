@@ -511,7 +511,7 @@ class Session {
   // to anything waiting on the results of "GET:all" that they have arrived,
   // have been parsed, and are waiting for them in this._cachedDevices
   public async getDeviceList(): Promise<Coviva_Node[]> {
-    if (!this.hasValidToken()) {
+    if (!this.hasToken()) {
       throw new Error('No valid token');
     }
 
