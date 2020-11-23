@@ -47,7 +47,7 @@
     "typescript": "^3.8.3"
   },
   "publishConfig": {
-    "access": "private"
+    "access": "public"
   },
   "dependencies": {
     "@types/express": "^4.17.9",
