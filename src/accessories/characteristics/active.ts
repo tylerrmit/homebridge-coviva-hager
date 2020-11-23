@@ -9,11 +9,13 @@ type DeviceWithActiveCharacteristic = Coviva_Node<CovivaDeviceState & ActiveChar
 export class ActiveCharacteristic extends CovivaCharacteristic {
   public static Title = 'Characteristic.Active'
 
+  /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
   public static HomekitCharacteristic(accessory: BaseAccessory) {
     return accessory.platform.Characteristic.Active;
   }
+  /* eslint-enable @typescript-eslint/explicit-module-boundary-types */
 
-  public static isSupportedByAccessory(accessory): boolean {
+  public static isSupportedByAccessory(accessory: BaseAccessory): boolean {
     return accessory.deviceConfig.data.state !== undefined;
   }
 

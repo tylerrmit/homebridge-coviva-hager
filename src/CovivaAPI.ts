@@ -3,11 +3,13 @@ import getMAC from 'getmac';
 import axios from 'axios';
 import * as querystring from 'querystring';
 
-const ws = require('ws');
-const wsp = require('websocket-as-promised');
+import WebSocket from 'ws';
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const Channel = require('chnl');
-const PromiseController = require('promise-controller');
+/* eslint-enable @typescript-eslint/no-var-requires */
+
+import PromiseController from 'promise-controller';
 
 import {Logger} from 'homebridge';
 
@@ -122,7 +124,7 @@ export interface Coviva_Attribute {
   changed_by_id:               number;
   based_on:                    number;
   data:                        string;
-  options:                     any[];
+  //options:                     any[];
 }
 
 export interface Coviva_Node<State extends CovivaDeviceState = CovivaDeviceState> {
@@ -143,7 +145,7 @@ export interface Coviva_Node<State extends CovivaDeviceState = CovivaDeviceState
   services:                    number;
   phonetic_name:               string;
   owner:                       number;
-  denied_user_ids:             any[];
+  //denied_user_ids:             any[];
   attributes:                  Coviva_Attribute[];
   data:                        State; // This was added to hold parsed state data
 }
@@ -237,7 +239,7 @@ export interface Coviva_Settings {
   uid:                         string;
   lan_enabled:                 number;
   cubes:                       Coviva_Cube[];
-  available_ssids:             any[];
+  //available_ssids:             any[];
   extensions:                  Coviva_Extensions;
 }
 
@@ -246,7 +248,7 @@ export interface Coviva_All {
   nodes:                       Coviva_Node[];
   groups:                      Coviva_Group[];
   relationships:               Coviva_Relationship[];
-  homeegrams:                  any[];
+  //homeegrams:                  any[];
   settings:                    Coviva_Settings;
 }
 
@@ -276,18 +278,18 @@ class Session {
   private username!:           string;
   private password!:           string;
   private covivaId!:           string;
-  private pollingInterval:     number = 0;
-  private pingInterval:        number = 60;
+  private pollingInterval      = 0;
+  private pingInterval         = 60;
   private log:                 Logger;
   private platform:            CovivaHagerPlatform;
 
   // Each new connection to the Coviva API WebSocket requires an access token
   // Keep track of the access_token and when it will expire
   private _accessToken!:       string;
-  private _expiresOn:          number = 0;
+  private _expiresOn           = 0;
 
   // How this plugin will identify itself to Coviva  
-  private device_hardware_id: string = '';
+  private device_hardware_id   = '';
   private user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15';
 
   // URL for Websocket and the WebSocket itself
@@ -299,13 +301,14 @@ class Session {
   private _onMessage!:      typeof Channel              | undefined;
   private _onClose!:        typeof Channel              | undefined;
   private _onError!:        typeof Channel              | undefined;
+
   private _pc_devicelist!:  typeof PromiseController    | undefined;
 
   // Cached information about devices and latest known status
   private _cachedDevices:   Coviva_Node[] = [];
 
   // Public information on whether the WebSocket is currently open
-  public wsIsOpen: boolean = false;
+  public wsIsOpen = false;
 
   constructor(
     private _username:        string,
@@ -331,7 +334,7 @@ class Session {
 
     // Generate a "hardware id" from a mac addr on this system, by hashing it
     // and taking a substring of the desired length
-    var shaObj = new jsSHA("SHA-512", "TEXT");
+    const shaObj = new jsSHA("SHA-512", "TEXT");
     shaObj.update(getMAC());
     this.device_hardware_id = shaObj.getHash("HEX").substring(1, 34);
 
@@ -341,7 +344,7 @@ class Session {
     // to that request type, rather than just resolving or rejecting
     // the promise outright when something else is read from the WebSocket
     // e.g. User login event
-    this._wsSubscription = null;
+    this._wsSubscription = undefined;
     this._createDeviceListController();
     this._createChannels();
 
@@ -358,12 +361,12 @@ class Session {
     this.log.debug('Obtaining access tokent for Coviva API');
 
     // Build 'Basic' authentication string
-    var username_encoded = encodeURIComponent(this.username);
-    var shaObj = new jsSHA("SHA-512", "TEXT");
+    const username_encoded = encodeURIComponent(this.username);
+    const shaObj = new jsSHA("SHA-512", "TEXT");
     shaObj.update(this.password);
-    var hash   = shaObj.getHash("HEX");
-    var auth_decoded = username_encoded + ':' + hash;
-    var auth_encoded = 'Basic ' + Buffer.from(auth_decoded).toString('base64');
+    const hash   = shaObj.getHash("HEX");
+    const auth_decoded = username_encoded + ':' + hash;
+    const auth_encoded = 'Basic ' + Buffer.from(auth_decoded).toString('base64');
 
     const res = await axios.post(
       'https://' + this.covivaId + '.koalabox.net/access_token',
@@ -393,14 +396,14 @@ class Session {
     else {
       // Parse the response to get the access token and how long
       // it'll be before it expires
-      var params = res.data.split('&'), i;
+      const params = res.data.split('&');
 
-      var token = '';
-      var expires_in = 0;
+      let token = '';
+      let expires_in = 0;
 
-      for (i = 0; i < params.length; i++) {
-        var key = params[i].split("=")[0];
-        var val = params[i].split("=")[1];
+      for (let i = 0; i < params.length; i++) {
+        const key = params[i].split("=")[0];
+        const val = params[i].split("=")[1];
 
         if (key == 'access_token') {
           token = val;
@@ -445,12 +448,17 @@ class Session {
 
     this.log.info('Opening WebSocket connection to Coviva API');
 
-    this.ws = new ws(this.ws_url, 'v2');
+    //this.ws = new ws(this.ws_url, 'v2');
+    this.ws = new WebSocket(this.ws_url, 'v2');
 
     const ready = new Promise((resolve, reject) => {
-      this.ws!.onopen  = resolve;
-      this.ws!.onerror = reject;
-      this.ws!.onclose = reject;
+      if (typeof this.ws !== undefined) {
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        this.ws!.onopen  = resolve;
+        this.ws!.onerror = reject;
+        this.ws!.onclose = reject;
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
+      }
     });
 
     await ready;
@@ -464,7 +472,7 @@ class Session {
 
     // Send "GET:all" command to get a list of all devices (and users etc. though
     // most of that is ignored
-    const devices = await this.getDeviceList();
+    await this.getDeviceList();
 
     // Set up a regular "ping" message to keep the WebSocket connection alive
     // iOS app seemed to "ping" every 5 seconds, so if it's set to any lower than
@@ -508,7 +516,7 @@ class Session {
     }
 
     // Make a promise that is controlled by this._pc_devicelist
-    const promise = await this._pc_devicelist.call(() => {
+    await this._pc_devicelist.call(() => {
       this.sendMessage('GET:all');
     });
 
@@ -524,7 +532,11 @@ class Session {
   public sendMessage(msg): void {
     //this.log.debug('WS Send:    [' + msg + ']');
 
-    this.ws!.send(msg);
+    if (typeof this.ws !== undefined) {
+      /* eslint-disable @typescript-eslint/no-non-null-assertion */
+      this.ws!.send(msg);
+      /* eslint-enable @typescript-eslint/no-non-null-assertion */
+    }
   }
 
   // Create the "Promise Controller" object that will co-ordinate responses to
@@ -559,15 +571,19 @@ class Session {
   }
 
   removeAllListeners() {
-    this._onMessage.removeAllListeners();
-    this._onClose.removeAllListeners();
-    this._onError.removeAllListeners();
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    this._onMessage!.removeAllListeners();
+    this._onClose!.removeAllListeners();
+    this._onError!.removeAllListeners();
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 
   // Handle incoming messages from the WebSocket
   _handleMessage(event) {
     const data = event;
-    this._onMessage.dispatchAsync(data);
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    this._onMessage!.dispatchAsync(data);
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
     this._tryUnpack(data);
   }
 
@@ -578,7 +594,7 @@ class Session {
       return;
     }
 
-    var json;
+    let json;
     try {
       json = JSON.parse(data.toString());
     }
@@ -587,13 +603,14 @@ class Session {
       return;
     }
 
-    if (json.hasOwnProperty('all')) {
+    //if (json.hasOwnProperty('all')) {
+    if (Object.prototype.hasOwnProperty.call(json, 'all')) {
       // THIS is the response to a "GET:all" that something might be waiting on!
 
       // Parse the incoming data into the JSON interfaces we defined for it
-      var dataFromServer: Coviva_All;
+      //const dataFromServer: Coviva_All;
 
-      dataFromServer = <Coviva_All>json.all;
+      const dataFromServer = <Coviva_All>json.all;
 
       // Read the interesting part of the message:  Raw information about
       // every device registered on Coviva.
@@ -604,7 +621,7 @@ class Session {
       // For each device, if it is a supported device, parse the state and
       // place it in the ".data" part of the Coviva_Node, for easy access
       // when communicating with HomeKit
-      for (var i = 0; i < this._cachedDevices.length; i++) {
+      for (let i = 0; i < this._cachedDevices.length; i++) {
         // Special characters like ' ' will have been encoded according to HTTP standards
         // E.g. 'some device' -> 'some%20device'
         // Decode them back into readable form
@@ -622,8 +639,8 @@ class Session {
           };
 
           // Parse attributes to find state (On/Off) and brightness
-          for (var j=0; j < this._cachedDevices[i].attributes.length; j++) {
-            var msg_attribute = this._cachedDevices[i].attributes[j];
+          for (let j=0; j < this._cachedDevices[i].attributes.length; j++) {
+            const msg_attribute = this._cachedDevices[i].attributes[j];
 
             if      (msg_attribute.type == 1) {
               // On/Off
@@ -650,33 +667,33 @@ class Session {
         this._pc_devicelist.resolve();
       }
     }
-    else if (json.hasOwnProperty('attribute')) {
+    //else if (json.hasOwnProperty('attribute')) {
+    else if (Object.prototype.hasOwnProperty.call(json, 'attribute')) {
       // This is a short message updating us about an attribute of a node
       // We get these when e.g. someone changes the state or brightness of a light
       // elsewhere, on the wall switch or maybe a phone app
       // They just arrive ASAP to keep us informed, therefore polling is not necessary :)
 
       // Read the simle "Coviva_Attriute" message into our JSON interfaces
-      var new_attribute: Coviva_Attribute;
+      //const new_attribute: Coviva_Attribute;
 
-      new_attribute = <Coviva_Attribute>json.attribute;
+      const new_attribute = <Coviva_Attribute>json.attribute;
 
       // Loop through all the devices to see which device the attribute belongs to,
       // then update our record of its current setting in this._cachedDevices
-      var prev_node:      Coviva_Node;
-      var prev_attribute: Coviva_Attribute;
+      let prev_node:      Coviva_Node;
+      let prev_attribute: Coviva_Attribute;
 
       // Loop through devices...
       loop1:
-      for (var i = 0; i < this._cachedDevices.length; i++) {
+      for (let i = 0; i < this._cachedDevices.length; i++) {
         prev_node = this._cachedDevices[i];
 
         // Once we find the device that owns this attribute...
         if (prev_node.id == new_attribute.node_id) {
 
           // Find the previous record for the attribute...
-          loop2:
-          for (var j = 0; j < prev_node.attributes.length; j++) {          
+          for (let j = 0; j < prev_node.attributes.length; j++) {          
             prev_attribute = prev_node.attributes[j];
 
             // Once we find the previous record for the attribute,
@@ -719,7 +736,8 @@ class Session {
 
       return;
     }
-    else if (json.hasOwnProperty('user')) {
+    //else if (json.hasOwnProperty('user')) {
+    else if (Object.prototype.hasOwnProperty.call(json, 'user')) {
       // Ignore other users logging into Coviva
       return;
     }
@@ -730,14 +748,14 @@ class Session {
 
   // Dump this._cachedDevices to the log
   _debugDeviceList() {
-    for (var i=0; i < this._cachedDevices.length; i++) {
-      var msg_node = this._cachedDevices[i];
+    for (let i=0; i < this._cachedDevices.length; i++) {
+      const msg_node = this._cachedDevices[i];
 
       if (msg_node.profile == 15) {
-        var node_debug = 'Node: ' + decodeURIComponent(msg_node.name);
+        let node_debug = 'Node: ' + decodeURIComponent(msg_node.name);
 
-        for (var j=0; j < msg_node.attributes.length; j++) {
-          var msg_attribute = msg_node.attributes[j];
+        for (let j=0; j < msg_node.attributes.length; j++) {
+          const msg_attribute = msg_node.attributes[j];
 
           if      (msg_attribute.type == 1) {
             node_debug = node_debug + ' OnOffState: [' + msg_attribute.current_value + ']';
@@ -757,13 +775,15 @@ class Session {
 
   // What to do if the WebSocket is closed?  Re-open it!
   _handleClose(event) {
-    this._onClose.dispatchAsync(event);
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    this._onClose!.dispatchAsync(event);
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     this.log.info('Coviva API WebSocket was closed');
 
     this.wsIsOpen = false;
 
-    if (this._pc_devicelist!.isPending) {
+    if (this._pc_devicelist.isPending) {
       const error = new Error ('WS Close during deviceList');
       this._pc_devicelist.reject(error);
     }
@@ -774,18 +794,16 @@ class Session {
 
   // What to do if there was an error?  Log it!
   _handleError(event) {
-    this._onError.dispatchAsync(event);
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    this._onError!.dispatchAsync(event);
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     this.log.warn('Coviva API WebSocket Error');
 
-    if (this._pc_devicelist!.isPending) {
+    if (this._pc_devicelist.isPending) {
       const error = new Error ('WS Error during deviceList');
       this._pc_devicelist.reject(error);
     }
-  }
-
-  _cleanup(error) {
-
   }
 }
 
@@ -799,8 +817,8 @@ export class CovivaAPI {
   private password: string | undefined;
   public  covivaId: string | undefined;
 
-  private pollingInterval: number = 0;
-  private pingInterval:    number = 60;
+  private pollingInterval = 0;
+  private pingInterval    = 60;
 
   private log: Logger;
 
@@ -872,7 +890,7 @@ export class CovivaAPI {
     // Find the device by reference
     const devices = this.session?.cachedDevices;
 
-    for (var i = 0; i < devices.length; i++) {
+    for (let i = 0; i < devices.length; i++) {
       if (devices[i].id.toString() == deviceId) {
         return devices[i].data as unknown as Promise<CovivaDeviceState & T | undefined>;
       } 
@@ -898,7 +916,7 @@ export class CovivaAPI {
 
     // Depending on the command (method), which attribute type are we looking for?
     // In future, this might depend on the profile id of the supported device
-    var attribute_type = 0;
+    let attribute_type = 0;
 
     switch (method) {
       case 'turnOnOff':
@@ -917,13 +935,12 @@ export class CovivaAPI {
 
     // Find the device by Id, then find the attribute by type
     const devices = this.session?.cachedDevices;
-    var attribute_id = 0;
+    let attribute_id = 0;
 
     loop1:
-    for (var i = 0; i < devices.length; i++) {
+    for (let i = 0; i < devices.length; i++) {
       if (devices[i].id.toString() == deviceId) {
-        loop2:
-        for (var j = 0; j < devices[i].attributes.length; j++) {
+        for (let j = 0; j < devices[i].attributes.length; j++) {
           if (devices[i].attributes[j].type == attribute_type) {
             attribute_id = devices[i].attributes[j].id;
 

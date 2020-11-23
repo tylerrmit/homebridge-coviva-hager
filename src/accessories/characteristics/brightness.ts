@@ -10,13 +10,15 @@ type DeviceWithBrightnessCharacteristic = Coviva_Node<CovivaDeviceState & Bright
 export class BrightnessCharacteristic extends CovivaCharacteristic {
   public static Title = 'Characteristic.Brightness'
 
+  /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
   public static HomekitCharacteristic(accessory: BaseAccessory) {
     return accessory.platform.Characteristic.Brightness;
   }
+  /* eslint-enable @typescript-eslint/explicit-module-boundary-types */
 
   public static DEFAULT_VALUE = 100;
 
-  public static isSupportedByAccessory(accessory): boolean {
+  public static isSupportedByAccessory(accessory: BaseAccessory): boolean {
     const configData = accessory.deviceConfig.data;
     return configData.brightness !== undefined;
   }

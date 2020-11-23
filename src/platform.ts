@@ -4,13 +4,11 @@ import {Coviva_Node, CovivaAPI} from './CovivaAPI';
 
 import {
   BaseAccessory,
-  DimmerAccessory, // Not actually used, my dimmer is a LightAccessory with on/off and brightness but no color
   LightAccessory
 } from './accessories';
 
 import {CovivaHagerConfig} from './config';
 import {AuthenticationError} from './errors';
-import {DeviceList} from './helpers/DeviceList';
 
 export type HomebridgeAccessory<DeviceConfig extends Coviva_Node> =
     PlatformAccessory
@@ -165,7 +163,9 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
   private addAccessory(device: Coviva_Node): void {
     const uuid = this.api.hap.uuid.generate(this.covivaAPI.covivaId?.toUpperCase() + device.id.toString());
 
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     const homebridgeAccessory = this.configured_accessories.get(uuid)!;
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     // Construct new accessory
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -179,7 +179,9 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
           this.log.warn('Could not init class for device type [%d]', device.profile);
           this.failedToInitAccessories.set(device.profile, []);
         }
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         this.failedToInitAccessories.set(device.profile, [uuid, ...this.failedToInitAccessories.get(device.profile)!]);
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
         break;
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -210,7 +212,9 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     // to have disappeared
     for (const cachedDeviceId of cachedDeviceIds) {
       if (!availableDeviceIds.includes(cachedDeviceId)) {
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         const device = this.configured_accessories.get(cachedDeviceId)!;
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
         this.log.warn('Device: %s - is no longer available and will be removed', device.displayName);
         this.removeAccessory(device);
       }

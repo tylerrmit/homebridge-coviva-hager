@@ -116,7 +116,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
       this.homebridgeAccessory.displayName = this.deviceConfig.name;
     }
     else {
-      var uuid = this.platform.generateUUID(this.platform.covivaId.toUpperCase() + this.deviceConfig.id);
+      const uuid = this.platform.generateUUID(this.platform.covivaId.toUpperCase() + this.deviceConfig.id);
 
       this.homebridgeAccessory = new this.platform.platformAccessory(
         this.deviceConfig.name,
@@ -149,7 +149,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
     return this.homebridgeAccessory.displayName;
   }
 
-  public setCharacteristic(characteristic: CharacteristicConstructor, value: Nullable<CharacteristicValue>, updateHomekit = false) {
+  public setCharacteristic(characteristic: CharacteristicConstructor, value: Nullable<CharacteristicValue>, updateHomekit = false): void {
     updateHomekit && this.service?.getCharacteristic(characteristic).updateValue(value);
   }
 
@@ -163,7 +163,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
 
   private debouncedDeviceStateRequest = debounce(this.resolveDeviceStateRequest, 500, {maxWait: 1500})
   private debouncedDeviceStateRequestPromise?: DebouncedPromise<CovivaDeviceState & DeviceConfig['data']>
-  public async resolveDeviceStateRequest() {
+  public async resolveDeviceStateRequest(): Promise<void> {
     const promise = this.debouncedDeviceStateRequestPromise;
     if(!promise) {
       this.error('Could not find base accessory promise.');
@@ -221,7 +221,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
     return this.platform.covivaAPI.setDeviceState(this.deviceId, method, payload);
   }
 
-  public updateAccessory(device: DeviceConfig) {
+  public updateAccessory(device: DeviceConfig): void {
     const setCharacteristic = (characteristic, value): void => {
       const char = accessoryInformationService.getCharacteristic(characteristic) ||
                 accessoryInformationService.addCharacteristic(characteristic);
@@ -254,7 +254,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
     }
   }
 
-  public addUpdateCallback(char: CharacteristicConstructor, callback: UpdateCallback<DeviceConfig>) {
+  public addUpdateCallback(char: CharacteristicConstructor, callback: UpdateCallback<DeviceConfig>): void {
     this.updateCallbackList.set(char, callback);
   }
 
