@@ -111,6 +111,16 @@ the connection is kept alive.  If you set it to zero, no pings will be sent at a
 The default is 60, I.E. one ping per 60 seconds.  I believe the iPhone app sends a ping
 even more frequently, so 60 seconds seems reasonable.
 
+## Tested devices
+
+Tested:
+
+* Coviva Micro Module - Dimmer - 2 wire (TRM691AU)
+
+Coming soon:
+
+* Coviva Micro Module - On / Off with Neutral (TRM693AU)
+
 ## Credits
 
 The code for this HomeKit plugin is based on @milo526/homebridge-tuya-web, adapted to
