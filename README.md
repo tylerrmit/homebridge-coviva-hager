@@ -114,7 +114,7 @@ even more frequently, so 60 seconds seems reasonable.
 ## Credits
 
 The code for this HomeKit plugin is based on @milo526/homebridge-tuya-web, adapted to
-use a WebSocket API.  I also refered to homebride-ewelink to help me understand how to
+use a WebSocket API.  I also referred to homebride-ewelink to help me understand how to
 use WebSockets in Javascript/Typescript.
 
 To reverse-engineeer the Coviva API, I used [Charles](http://charlesproxy.com) to trace
