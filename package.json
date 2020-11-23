@@ -1,0 +1,65 @@
+{
+  "displayName": "CovivaHagerPlatform",
+  "name": "homebridge-coviva-hager",
+  "version": "0.1.0",
+  "description": "Homebridge plugin for use with Hager Coviva devices",
+  "main": "dist/index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "build": "rimraf ./dist && tsc",
+    "lint": "eslint **/src/**/*.ts",
+    "prepublishOnly": "npm run lint && npm run build",
+    "release": "np",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npm run build && npm link && nodemon",
+    "clear-cache": "rimraf ~/.homebridge/accessories/cachedAccessories && rimraf ~/.homebridge/persist/*"
+  },
+  "keywords": [
+    "homebridge",
+    "homebridge-plugin",
+    "coviva",
+    "hager"
+  ],
+  "author": "Tyler Saxton <tyler.l.saxton@gmail.com>",
+  "engines": {
+    "node": ">=10.17.0",
+    "homebridge": ">=1.0.0"
+  },
+  "license": "MIT",
+  "files": [
+    "LICENSE",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylerrmit/homebridge-coviva-hager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tylerrmit/homebridge-coviva-hager/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^10.17.19",
+    "homebridge": "^1.0.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.8.3"
+  },
+  "publishConfig": {
+    "access": "private"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.9",
+    "@types/ws": "^7.4.0",
+    "chnl": "^1.2.0",
+    "eslint": "^7.13.0",
+    "express": "^4.17.1",
+    "getmac": "^5.17.0",
+    "jssha": "^3.1.2",
+    "lodash.debounce": "^4.0.8",
+    "promise-controller": "^1.0.0",
+    "ts-xor": "^1.0.8",
+    "tson-schema": "^0.7.0",
+    "websocket": "^1.0.32",
+    "websocket-as-promised": "^1.1.0",
+    "ws": "^7.4.0"
+  }
+}
