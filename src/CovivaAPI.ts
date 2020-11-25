@@ -276,7 +276,7 @@ class Session {
   private username!:           string;
   private password!:           string;
   private covivaId!:           string;
-  private pollingInterval      = 0;
+  private pollingInterval      = 180;
   private pingInterval         = 60;
   private log:                 Logger;
   private platform:            CovivaHagerPlatform;
@@ -480,6 +480,12 @@ class Session {
         this.sendMessage('ping');
       }, this.pingInterval * 1000);
     }
+    else if (this.pingInterval == 0) {
+      this.log.info('Ping Interval is zero, not sending keepalive pings');
+    }
+    else {
+      this.log.info('Ping Interval [' + this.pingInterval + '] is less than the minimum of 5, not sending keepalive pings');
+    }
 
     // Set up a regular "polling" for device state via "GET:all" every X seconds
     // This actually shouldn't be necessary, so the recommended setting is zero,
@@ -488,6 +494,12 @@ class Session {
       setTimeout(() => {
         this.sendMessage('GET:all');
       }, this.pollingInterval * 1000);
+    }
+    else if (this.pollingInterval == 0) {
+      this.log.info('Polling Interval is zero, not polling for device status');
+    }
+    else {
+      this.log.info('Polling Interval [' + this.pollingInterval + '] is less than the minimum of 60, not polling for device status');
     }
 
     // Record that the WebSocket is currently open

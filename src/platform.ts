@@ -29,7 +29,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
   public readonly configured_accessories: Map<string, HomebridgeAccessory<any>> = new Map();
 
   // Intervals for polling and pinging the Coviva API, plus a record of our Coviva ID
-  private readonly pollingInterval: number = 0;
+  private readonly pollingInterval: number = 180;
   private readonly pingInterval:    number = 60;
   public  readonly covivaId:        string = '';
 
@@ -59,7 +59,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
     // Set default intervals
     if (typeof config.options.pollingInterval === 'undefined') {
-      this.pollingInterval = 0;
+      this.pollingInterval = 180;
     }
     else {
       this.pollingInterval = config.options.pollingInterval;
