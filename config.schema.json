@@ -46,7 +46,7 @@
           "pingInterval": {
             "title": "Ping Interval",
             "type": "number",
-            "description": "Instruct the plugin to sent a simple "PING" message to Coviva every N seconds, to keep the connection alive.  Must be 5 or larger. Default 60.",
+            "description": "Instruct the plugin to sent a simple PING message to Coviva every N seconds, to keep the connection alive.  Must be 5 or larger. Default 60.",
             "required": false,
             "minimum": 0,
             "default": 60
