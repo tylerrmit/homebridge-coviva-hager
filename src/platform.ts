@@ -4,6 +4,7 @@ import {Coviva_Node, CovivaAPI} from './CovivaAPI';
 
 import {
   BaseAccessory,
+  DimmableLightAccessory,
   LightAccessory
 } from './accessories';
 
@@ -145,7 +146,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     // Refresh device states
     for (const device of devices) {
       // Only do this for supported devices that would have been registered with HomeKit
-      if (device.profile == 15) {
+      if (device.profile == 10 || device.profile == 15) {
         const uuid = this.api.hap.uuid.generate(this.covivaAPI.covivaId?.toUpperCase() + device.id.toString());
 
         const homebridgeAccessory = this.configured_accessories.get(uuid);
@@ -170,8 +171,12 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     // Construct new accessory
     /* eslint-disable @typescript-eslint/no-explicit-any */
     switch (device.profile) {
-      case 15:
+      case 10:
         new LightAccessory(this, homebridgeAccessory, device as any);
+        break;
+
+      case 15:
+        new DimmableLightAccessory(this, homebridgeAccessory, device as any);
         break;
 
       default:
@@ -193,7 +198,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
       return [];
     }
     return devices
-      .filter(d => (d.profile == 15));
+      .filter(d => (d.profile == 10 || d.profile == 15));
      
     return devices; 
   }

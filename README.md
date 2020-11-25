@@ -115,11 +115,8 @@ even more frequently, so 60 seconds seems reasonable.
 
 Tested:
 
+* Coviva Micro Module - On/Off with Neutral (TRM693AU)
 * Coviva Micro Module - Dimmer - 2 wire (TRM691AU)
-
-Coming soon:
-
-* Coviva Micro Module - On / Off with Neutral (TRM693AU)
 
 ## Credits
 

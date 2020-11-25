@@ -628,8 +628,8 @@ class Session {
         this._cachedDevices[i].name = decodeURIComponent(this._cachedDevices[i].name);
 
         // Parse state and brightness
-        if (this._cachedDevices[i].profile == 15) {
-          // Dimmer module type
+        if (this._cachedDevices[i].profile == 10 || this._cachedDevices[i].profile == 15) {
+          // On/Off (10) or Dimmable (15) module type
           this.log.info('Parsing state for device [%s] with supported profile [%d]', this._cachedDevices[i].name, this._cachedDevices[i].profile);
           // Initialise "data" object within Coviva_Node to hold parsed state
           this._cachedDevices[i].data = {
@@ -646,7 +646,7 @@ class Session {
               // On/Off
               this._cachedDevices[i].data.state = (msg_attribute.current_value == 0) ? false : true;
             }
-            else if (msg_attribute.type == 2) {
+            else if (msg_attribute.type == 2 && this._cachedDevices[i].profile == 15) {
               // Brightness
               this._cachedDevices[i].data.brightness = msg_attribute.current_value;
             }
@@ -667,7 +667,6 @@ class Session {
         this._pc_devicelist.resolve();
       }
     }
-    //else if (json.hasOwnProperty('attribute')) {
     else if (Object.prototype.hasOwnProperty.call(json, 'attribute')) {
       // This is a short message updating us about an attribute of a node
       // We get these when e.g. someone changes the state or brightness of a light
@@ -707,7 +706,7 @@ class Session {
               // the above code for handling a GET:all.
               // When we support more device types (profile IDs) we will probably want
               // to address this double-maintenance aspect of the code
-              if (this._cachedDevices[i].profile == 15) {
+              if (this._cachedDevices[i].profile == 10 || this._cachedDevices[i].profile == 15) {
                 // Parse state and brightness
                 if      (new_attribute.type == 1) {
                   const new_value = (new_attribute.current_value == 0) ? false : true;
@@ -718,7 +717,7 @@ class Session {
 
                   this._cachedDevices[i].data.state = new_value;
                 }
-                else if (new_attribute.type == 2) {
+                else if (new_attribute.type == 2 && this._cachedDevices[i].profile == 15) {
                   if (this._cachedDevices[i].data.brightness != new_attribute.current_value) {
                     genuine_update = true;
                   }
@@ -765,7 +764,7 @@ class Session {
     for (let i=0; i < this._cachedDevices.length; i++) {
       const msg_node = this._cachedDevices[i];
 
-      if (msg_node.profile == 15) {
+      if (msg_node.profile == 10 || msg_node.profile == 15) {
         let node_debug = 'Node: ' + decodeURIComponent(msg_node.name);
 
         for (let j=0; j < msg_node.attributes.length; j++) {
@@ -774,7 +773,7 @@ class Session {
           if      (msg_attribute.type == 1) {
             node_debug = node_debug + ' OnOffState: [' + msg_attribute.current_value + ']';
           }
-          else if (msg_attribute.type == 2) {
+          else if (msg_attribute.type == 2 && msg_node.profile == 15) {
             node_debug = node_debug + ' Brightness: [' + msg_attribute.current_value + ']';
           }
         }
