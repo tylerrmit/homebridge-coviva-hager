@@ -13,8 +13,6 @@ import PromiseController from 'promise-controller';
 
 import {Logger} from 'homebridge';
 
-import {AuthenticationError} from './errors';
-
 import {CovivaHagerPlatform} from './platform';
 
 
@@ -391,7 +389,7 @@ class Session {
     );
 
     if (res.status != 200) {
-      throw new AuthenticationError(res.statusText);
+      this.log.error('Unable to authenticate [' + res.status + ']: [' + res.statusText + ']');
     }
     else {
       // Parse the response to get the access token and how long
@@ -911,7 +909,8 @@ export class CovivaAPI {
       } 
     }
 
-    throw new Error('Unable to find status for device [' + deviceId + ']');
+    this.log.error('Unable to find status for device [' + deviceId + ']');
+    return undefined;
   }
 
   // Send a command to the Coviva API to change the state of a device (node) attribute
@@ -946,7 +945,8 @@ export class CovivaAPI {
     }
 
     if (attribute_type == 0) {
-      throw new Error('Invalid method: [' + method + ']');
+      this.log.error('Invalid method: [ ' + method + ']');
+      return;
     }
 
     // Find the device by Id, then find the attribute by type
@@ -967,7 +967,8 @@ export class CovivaAPI {
     }
 
     if (attribute_id == 0) {
-      throw new Error('Unable to find attribute [' + attribute_id.toString() + '] for device [' + deviceId + ']');
+      this.log.warn('Unable to find attribute [%s] for device [%s]', attribute_id.toString(), deviceId);
+      return;
     }
 
     // Assemble the command, then ask the Session to send it to Coviva

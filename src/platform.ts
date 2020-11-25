@@ -9,7 +9,6 @@ import {
 } from './accessories';
 
 import {CovivaHagerConfig} from './config';
-import {AuthenticationError} from './errors';
 
 export type HomebridgeAccessory<DeviceConfig extends Coviva_Node> =
     PlatformAccessory
@@ -99,12 +98,8 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
         await this.discoverDevices();
       }
       catch (e) {
-        if (e instanceof AuthenticationError) {
-          this.log.error('Authentication error: %s', e.message);
-        } else {
-          this.log.error(e.message);
-          this.log.debug(e);
-        }
+        this.log.error(e.message);
+        this.log.debug(e);
       }
     });
   }
