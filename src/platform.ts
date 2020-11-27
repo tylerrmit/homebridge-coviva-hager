@@ -96,6 +96,41 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
         // Discover/register new accessories, and get current state information
         await this.discoverDevices();
+
+        // Set up periodic polling and pings (ONCE)
+
+        // Set up a regular "polling" for device state via "GET:all" every X seconds
+        if (this.pollingInterval >= 60) {
+          this.log.info('Setting polling interval: ' + this.pollingInterval);
+
+          setTimeout(() => {
+            this.covivaAPI.sendMessage('GET:all');
+          }, this.pollingInterval * 1000);
+        }
+        else if (this.pollingInterval == 0) {
+          this.log.info('Polling interval is zero, not polling for device status');
+        }
+        else {
+          this.log.info('Polling Interval [' + this.pollingInterval + '] is less than the minimum of 60, not polling for device status');
+        }
+
+        // Set up a regular "ping" message to keep the WebSocket connection alive
+        // iOS app seemed to "ping" every 5 seconds, so if it's set to any lower than
+        // that (e.g. 0) then we will not ping at all, to avoid causing a nuissance.
+        // Recommended interval 60 seconds, you could make it much longer, probaly
+        if (this.pingInterval >= 5) {
+          setInterval(() => {
+            this.covivaAPI.sendMessage('ping');
+          }, this.pingInterval * 1000);
+        }
+        else if (this.pingInterval == 0) {
+          this.log.info('Ping Interval is zero, not sending keepalive pings');
+        }
+        else {
+          this.log.info('Ping Interval [' + this.pingInterval + '] is less than the minimum of 5, not sending keepalive pings');
+        }
+
+        
       }
       catch (e) {
         this.log.error(e.message);

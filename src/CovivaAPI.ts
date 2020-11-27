@@ -471,37 +471,6 @@ class Session {
     // most of that is ignored
     await this.getDeviceList();
 
-    // Set up a regular "ping" message to keep the WebSocket connection alive
-    // iOS app seemed to "ping" every 5 seconds, so if it's set to any lower than
-    // that (e.g. 0) then we will not ping at all, to avoid causing a nuissance.
-    // Recommended interval 60 seconds, you could make it much longer, probaly
-    if (this.pingInterval >= 5) {
-      setInterval(() => {
-        this.sendMessage('ping');
-      }, this.pingInterval * 1000);
-    }
-    else if (this.pingInterval == 0) {
-      this.log.info('Ping Interval is zero, not sending keepalive pings');
-    }
-    else {
-      this.log.info('Ping Interval [' + this.pingInterval + '] is less than the minimum of 5, not sending keepalive pings');
-    }
-
-    // Set up a regular "polling" for device state via "GET:all" every X seconds
-    // This actually shouldn't be necessary, so the recommended setting is zero,
-    // I.E. no polling
-    if (this.pollingInterval >= 60) {
-      setTimeout(() => {
-        this.sendMessage('GET:all');
-      }, this.pollingInterval * 1000);
-    }
-    else if (this.pollingInterval == 0) {
-      this.log.info('Polling Interval is zero, not polling for device status');
-    }
-    else {
-      this.log.info('Polling Interval [' + this.pollingInterval + '] is less than the minimum of 60, not polling for device status');
-    }
-
     // Record that the WebSocket is currently open
     this.wsIsOpen = true;
 
@@ -540,12 +509,17 @@ class Session {
 
   // Send a message/command to Coviva via the WebSocket
   public sendMessage(msg): void {
-    //this.log.debug('WS Send:    [' + msg + ']');
+    this.log.debug('WS Send:    [' + msg + ']');
 
     if (typeof this.ws !== undefined) {
-      /* eslint-disable @typescript-eslint/no-non-null-assertion */
-      this.ws!.send(msg);
-      /* eslint-enable @typescript-eslint/no-non-null-assertion */
+      try {
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        this.ws!.send(msg);
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
+      }
+      catch (e) {
+        this.log.warn('Unable to send message [' + msg + ']');
+      }
     }
   }
 
@@ -989,6 +963,11 @@ export class CovivaAPI {
     this.session?.sendMessage(cmd);
 
     return;
+  }
+
+  // Send a message/command to Coviva via the WebSocket
+  public sendMessage(msg: string): void {
+    this.session?.sendMessage(msg);
   }
 }
 
