@@ -79,8 +79,6 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
       options.username,
       options.password,
       options.covivaId,
-      this.pollingInterval,
-      this.pingInterval,
       this.log,
       this // Passing a reference to this object for the purposes of passing incoming device update signals to HomeKit
     );
@@ -104,7 +102,12 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
           this.log.info('Setting polling interval: ' + this.pollingInterval);
 
           setTimeout(() => {
-            this.covivaAPI.sendMessage('GET:all');
+            try {
+              this.covivaAPI.sendMessage('GET:all');
+            }
+            catch (e) {
+              this.log.warn('Unable to poll device status');
+            }
           }, this.pollingInterval * 1000);
         }
         else if (this.pollingInterval == 0) {
@@ -120,7 +123,12 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
         // Recommended interval 60 seconds, you could make it much longer, probaly
         if (this.pingInterval >= 5) {
           setInterval(() => {
-            this.covivaAPI.sendMessage('ping');
+            try {
+              this.covivaAPI.sendMessage('ping');
+            }
+            catch (e) {
+              this.log.warn('Failed to send ping');
+            }
           }, this.pingInterval * 1000);
         }
         else if (this.pingInterval == 0) {

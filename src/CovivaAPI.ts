@@ -276,8 +276,6 @@ class Session {
   private username!:           string;
   private password!:           string;
   private covivaId!:           string;
-  private pollingInterval      = 180;
-  private pingInterval         = 60;
   private log:                 Logger;
   private platform:            CovivaHagerPlatform;
 
@@ -285,6 +283,9 @@ class Session {
   // Keep track of the access_token and when it will expire
   private _accessToken!:       string;
   private _expiresOn           = 0;
+
+  // Only mention some things in the log when first starting up
+  private _startedUp           = false;
 
   // How this plugin will identify itself to Coviva  
   private device_hardware_id   = '';
@@ -312,16 +313,12 @@ class Session {
     private _username:        string,
     private _password:        string,
     private _covivaId:        string,
-    private _pollingInterval: number,
-    private _pingInterval:    number,
     private _log:             Logger,
     private _platform:        CovivaHagerPlatform
   ) {
     this.username        = _username;
     this.password        = _password;
     this.covivaId        = _covivaId;
-    this.pollingInterval = _pollingInterval;
-    this.pingInterval    = _pingInterval;
     this.log             = _log;
     this.platform        = _platform;
 
@@ -509,7 +506,7 @@ class Session {
 
   // Send a message/command to Coviva via the WebSocket
   public sendMessage(msg): void {
-    this.log.debug('WS Send:    [' + msg + ']');
+    this.log.info('WS Send: [' + msg + ']');
 
     if (typeof this.ws !== undefined) {
       try {
@@ -637,7 +634,7 @@ class Session {
           }
         }
         // Add support for more profile IDs here
-        else {
+        else if (!this._startedUp) {
           this.log.info('Ignoring device [%s] with unsupported profile [%d]', this._cachedDevices[i].name, this._cachedDevices[i].profile);
         }
       }
@@ -650,6 +647,8 @@ class Session {
       if (this._pc_devicelist.isPending) {
         this._pc_devicelist.resolve();
       }
+
+      this._startedUp = true;
     }
     else if (Object.prototype.hasOwnProperty.call(json, 'attribute')) {
       // This is a short message updating us about an attribute of a node
@@ -781,8 +780,7 @@ class Session {
     this.wsIsOpen = false;
 
     if (this._pc_devicelist.isPending) {
-      const error = new Error ('WS Close during deviceList');
-      this._pc_devicelist.reject(error);
+      this.log.warn('WS Close during deviceList');
     }
 
     // Reconnect, getting a new/valid token if necessary
@@ -798,8 +796,7 @@ class Session {
     this.log.warn('Coviva API WebSocket Error');
 
     if (this._pc_devicelist.isPending) {
-      const error = new Error ('WS Error during deviceList');
-      this._pc_devicelist.reject(error);
+      this.log.warn('WS Error during deviceList');
     }
   }
 }
@@ -814,9 +811,6 @@ export class CovivaAPI {
   private password: string | undefined;
   public  covivaId: string | undefined;
 
-  private pollingInterval = 0;
-  private pingInterval    = 60;
-
   private log: Logger;
 
   private platform: CovivaHagerPlatform;
@@ -825,8 +819,6 @@ export class CovivaAPI {
     private _username:        string,
     private _password:        string,
     private _covivaId:        string,
-    private _pollingInterval: number,
-    private _pingInterval:    number,
     private _log:             Logger,
     private _platform:        CovivaHagerPlatform
   ) {
@@ -834,8 +826,6 @@ export class CovivaAPI {
     this.username        = _username;
     this.password        = _password;
     this.covivaId        = _covivaId.toUpperCase(); 
-    this.pollingInterval = _pollingInterval;
-    this.pingInterval    = _pingInterval;
     this.log             = _log;
     this.platform        = _platform;
 
@@ -844,8 +834,6 @@ export class CovivaAPI {
       this.username,
       this.password,
       this.covivaId,
-      this.pollingInterval,
-      this.pingInterval,
       this.log,
       this.platform
     );
