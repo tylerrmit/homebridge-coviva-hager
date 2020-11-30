@@ -444,6 +444,20 @@ class Session {
       await this.requestToken();
     }
 
+    // Close any existing connection first
+    try {
+      /* eslint-disable @typescript-eslint/no-non-null-assertion */
+      if (typeof this.ws! !== undefined) {
+        this.ws!.close()
+        this.wsIsOpen = false;
+        this.log.info('Closed existing connection to Coviva API');
+      }
+      /* eslint-enable @typescript-eslint/no-non-null-assertion */
+    }
+    catch (e) {
+      this.log.debug('Unable to close existing connection');
+    }
+
     this.log.info('Opening WebSocket connection to Coviva API');
 
     try {
@@ -900,21 +914,10 @@ class Session {
   _handleClose(event) {
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
     this._onClose!.dispatchAsync(event);
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
+    this.wsIsOpen = false;
 
     this.log.info('Coviva API WebSocket was closed');
-
-    // Make sure it really is closed, we don't want 1000 of them!
-    try {
-      if (typeof this.ws !== undefined) {
-        this.ws!.close();
-      }
-    }
-    catch (e) {
-      this.log.debug('WebSocket really was closed');
-    }
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
-
-    this.wsIsOpen = false;
 
     if (this._pc_devicelist.isPending) {
       this.log.warn('WS Close during deviceList');
