@@ -782,9 +782,19 @@ class Session {
   _handleClose(event) {
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
     this._onClose!.dispatchAsync(event);
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     this.log.info('Coviva API WebSocket was closed');
+
+    // Make sure it really is closed, we don't want 1000 of them!
+    try {
+      if (typeof this.ws !== undefined) {
+        this.ws!.close();
+      }
+    }
+    catch (e) {
+      this.log.debug('WebSocket really was closed');
+    }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
 
     this.wsIsOpen = false;
 
