@@ -446,54 +446,63 @@ class Session {
 
     this.log.info('Opening WebSocket connection to Coviva API');
 
-    this.ws = new WebSocket(this.ws_url, 'v2');
+    try {
+      this.ws = new WebSocket(this.ws_url, 'v2');
 
-    const ready = new Promise((resolve, reject) => {
-      if (typeof this.ws !== undefined) {
-        /* eslint-disable @typescript-eslint/no-non-null-assertion */
-        this.ws!.onopen  = resolve;
-        this.ws!.onerror = reject;
-        this.ws!.onclose = reject;
-        /* eslint-enable @typescript-eslint/no-non-null-assertion */
-      }
-    });
-
-    await ready;
-
-    // Set up "channels" for subscribing to key "events" on the WebSocket
-    this._wsSubscription = new Channel.Subscription([
-      { channel: this.ws, event: 'message', listener: e => this._handleMessage(e) },
-      { channel: this.ws, event: 'close',   listener: e => this._handleClose(e) },
-      { channel: this.ws, event: 'error',   listener: e => this._handleError(e) }
-    ]).on();
-
-    // Record that the WebSocket is currently open
-    this.wsIsOpen = true;
-
-    this.log.info('Opened WebSocket connection to Coviva API');
-
-    // Resend any delayed messages
-    if (this._delayed.length > 0) {
-      this.log.info('Resending %d delayed messages', this._delayed.length);
-
-      for (let m=0; m < this._delayed.length; m++) {
-        const msg = this._delayed[m];
-
-        this.log.info('WS Resend: [' + msg + ']');
-
+      const ready = new Promise((resolve, reject) => {
         if (typeof this.ws !== undefined) {
-          try {
-            /* eslint-disable @typescript-eslint/no-non-null-assertion */
-            this.ws!.send(msg);
-            /* eslint-enable @typescript-eslint/no-non-null-assertion */
-          }
-          catch (e) {
-            this.log.warn('Unable to resend message [' + msg + ']');
+          /* eslint-disable @typescript-eslint/no-non-null-assertion */
+          this.ws!.onopen  = resolve;
+          this.ws!.onerror = reject;
+          this.ws!.onclose = reject;
+          /* eslint-enable @typescript-eslint/no-non-null-assertion */
+        }
+      });
+
+      await ready;
+
+      // Set up "channels" for subscribing to key "events" on the WebSocket
+      this._wsSubscription = new Channel.Subscription([
+        { channel: this.ws, event: 'message', listener: e => this._handleMessage(e) },
+        { channel: this.ws, event: 'close',   listener: e => this._handleClose(e) },
+        { channel: this.ws, event: 'error',   listener: e => this._handleError(e) }
+      ]).on();
+
+      // Record that the WebSocket is currently open
+      this.wsIsOpen = true;
+
+      this.log.info('Opened WebSocket connection to Coviva API');
+
+      // Resend any delayed messages
+      if (this._delayed.length > 0) {
+        this.log.info('Resending %d delayed messages', this._delayed.length);
+
+        for (let m=0; m < this._delayed.length; m++) {
+          const msg = this._delayed[m];
+
+          this.log.info('WS Resend: [' + msg + ']');
+
+          if (typeof this.ws !== undefined) {
+            try {
+              /* eslint-disable @typescript-eslint/no-non-null-assertion */
+              this.ws!.send(msg);
+              /* eslint-enable @typescript-eslint/no-non-null-assertion */
+            }
+            catch (e) {
+              this.log.warn('Unable to resend message [' + msg + ']');
+            }
           }
         }
-      }
 
-      this._delayed = [];
+        this._delayed = [];
+      }
+    }
+    catch (e) {
+      this.log.info('Unable to connect, retrying in 10');
+
+      setTimeout(() => {
+        this.login();
+      }, 10 * 1000);
     }
   }
 
@@ -641,7 +650,7 @@ class Session {
   // Create the "Promise Controller" object that will co-ordinate responses to
   // things waiting on a response to "GET:all"
   _createDeviceListController() {
-    const connectionTimeout = 60 * 1000; // One minute for a response is more than fair
+    const connectionTimeout = 120 * 1000; // Two minutex for a response is more than fair
     // We could make this configurable if it were ever an issue
     this._pc_devicelist = new PromiseController({
       timeout: connectionTimeout,
