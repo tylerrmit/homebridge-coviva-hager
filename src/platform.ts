@@ -59,14 +59,14 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
     // Set default intervals
     if (typeof config.options.pollingInterval === 'undefined') {
-      this.pollingInterval = 180;
+      this.pollingInterval = 120;
     }
     else {
       this.pollingInterval = config.options.pollingInterval;
     }
 
     if (typeof config.options.pingInterval === 'undefined') {
-      this.pingInterval = 60;
+      this.pingInterval = 20;
     }
     else {
       this.pingInterval = config.options.pingInterval;
@@ -101,7 +101,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
         if (this.pollingInterval >= 60) {
           this.log.info('Setting polling interval: ' + this.pollingInterval);
 
-          setTimeout(() => {
+          setInterval(() => {
             try {
               this.covivaAPI.sendMessage('GET:all');
             }
@@ -120,7 +120,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
         // Set up a regular "ping" message to keep the WebSocket connection alive
         // iOS app seemed to "ping" every 5 seconds, so if it's set to any lower than
         // that (e.g. 0) then we will not ping at all, to avoid causing a nuissance.
-        // Recommended interval 60 seconds, you could make it much longer, probaly
+        // Recommended interval 20 seconds, you could make it much longer, probaly
         if (this.pingInterval >= 5) {
           setInterval(() => {
             try {

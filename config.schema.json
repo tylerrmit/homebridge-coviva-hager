@@ -38,18 +38,18 @@
           "pollingInterval": {
             "title": "Polling Interval",
             "type": "number",
-            "description": "Instruct the plugin to poll the Coviva API every N seconds for the latest device statuses.  If you set this to zero, there will be no polling, and the plugin will rely on the Coviva API to proactively push out the latest statuses.  Must be set to either >= 60 (to avoid potentially upsetting Hager) or zero.  Default 180.",
+            "description": "Instruct the plugin to poll the Coviva API every N seconds for the latest device statuses.  If you set this to zero, there will be no polling, and the plugin will rely on the Coviva API to proactively push out the latest statuses.  Must be set to either >= 60 (to avoid potentially upsetting Hager) or zero.  Default 120.",
             "required": false,
             "minimum": 0,
-            "default": 180
+            "default": 120
           },
           "pingInterval": {
             "title": "Ping Interval",
             "type": "number",
-            "description": "Instruct the plugin to sent a simple PING message to Coviva every N seconds, to keep the connection alive.  Must be 5 or larger. Default 60.",
+            "description": "Instruct the plugin to sent a simple PING message to Coviva every N seconds, to keep the connection alive.  Must be 5 or larger. Default 20.",
             "required": false,
             "minimum": 0,
-            "default": 60
+            "default": 20
           }
         }
       }
