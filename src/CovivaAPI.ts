@@ -512,11 +512,7 @@ class Session {
       }
     }
     catch (e) {
-      this.log.info('Unable to connect, retrying in 10');
-
-      setTimeout(() => {
-        this.login();
-      }, 10 * 1000);
+      this.log.info('Unable to connect, retrying on next ping/message');
     }
   }
 
@@ -915,6 +911,13 @@ class Session {
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
     this._onClose!.dispatchAsync(event);
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
+
+    // We seem to get CLOSE events when the WebSocket is still open
+    // Don't panic!  Wait until we fail to send a message before
+    // we try to re-open the connection
+
+    this.log.info('Received CLOSE event for Coviva API, possible false alarm');
+    /*
     this.wsIsOpen = false;
 
     this.log.info('Coviva API WebSocket was closed');
@@ -925,6 +928,7 @@ class Session {
 
     // Reconnect, getting a new/valid token if necessary
     this.login();
+    */
   }
 
   // What to do if there was an error?  Log it!
@@ -1009,7 +1013,7 @@ export class CovivaAPI {
   // Return the parsed device state "data" part of the specified Coviva_Node, from what
   // has been cached by the Session
   public async getDeviceState<T>(deviceId: string): Promise<CovivaDeviceState & T | undefined> {
-    if (!this.session?.hasValidToken()) {
+    if (!this.session?.hasToken()) {
       this.log.warn('No valid token on getDeviceState()');
       await this.session?.login();
     }
