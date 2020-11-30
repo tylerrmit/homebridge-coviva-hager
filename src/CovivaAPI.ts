@@ -466,7 +466,12 @@ class Session {
 
     // Send "GET:all" command to get a list of all devices (and users etc. though
     // most of that is ignored
-    await this.getDeviceList();
+    try {
+      await this.getDeviceList();
+    }
+    catch (e) {
+      this.log.warn('getDeviceList failed');
+    }
 
     // Record that the WebSocket is currently open
     this.wsIsOpen = true;
@@ -516,6 +521,9 @@ class Session {
       }
       catch (e) {
         this.log.warn('Unable to send message [' + msg + ']');
+
+        // Reconnect
+        this.login();
       }
     }
   }
@@ -572,6 +580,7 @@ class Session {
   _tryUnpack(data) {
     if (data == 'pong') {
       // Ignore responses to a "ping"
+      this.log.info('Received PONG');
       return;
     }
 
@@ -732,14 +741,14 @@ class Session {
 
       return;
     }
-    //else if (json.hasOwnProperty('user')) {
     else if (Object.prototype.hasOwnProperty.call(json, 'user')) {
       // Ignore other users logging into Coviva
+      this.log.info('Ignoring user login message');
       return;
     }
 
-    //this.log.debug('WS Message: Unknown JSON object');
-    //this.log.debug('WS Message: [' + data + ']');
+    this.log.debug('WS Message: Unknown JSON object');
+    this.log.debug('WS Message: [' + data + ']');
   }
 
   // Dump this._cachedDevices to the log
