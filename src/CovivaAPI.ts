@@ -309,6 +309,9 @@ class Session {
   // Public information on whether the WebSocket is currently open
   public wsIsOpen = false;
 
+  // Array of delayed messages to send
+  private _delayed:         string[] = [];
+
   constructor(
     private _username:        string,
     private _password:        string,
@@ -464,19 +467,34 @@ class Session {
       { channel: this.ws, event: 'error',   listener: e => this._handleError(e) }
     ]).on();
 
-    // Send "GET:all" command to get a list of all devices (and users etc. though
-    // most of that is ignored
-    try {
-      await this.getDeviceList();
-    }
-    catch (e) {
-      this.log.warn('getDeviceList failed');
-    }
-
     // Record that the WebSocket is currently open
     this.wsIsOpen = true;
 
     this.log.info('Opened WebSocket connection to Coviva API');
+
+    // Resend any delayed messages
+    if (this._delayed.length > 0) {
+      this.log.info('Resending %d delayed messages', this._delayed.length);
+
+      for (let m=0; m < this._delayed.length; m++) {
+        const msg = this._delayed[m];
+
+        this.log.info('WS Resend: [' + msg + ']');
+
+        if (typeof this.ws !== undefined) {
+          try {
+            /* eslint-disable @typescript-eslint/no-non-null-assertion */
+            this.ws!.send(msg);
+            /* eslint-enable @typescript-eslint/no-non-null-assertion */
+          }
+          catch (e) {
+            this.log.warn('Unable to resend message [' + msg + ']');
+          }
+        }
+      }
+
+      this._delayed = [];
+    }
   }
 
   // Get the device list via "GET:all", in such a way that the caller
@@ -522,10 +540,102 @@ class Session {
       catch (e) {
         this.log.warn('Unable to send message [' + msg + ']');
 
+        // Add this message to the list of delayed messages, so we can re-send
+        this._delayed.push(msg);
+
         // Reconnect
         this.login();
       }
     }
+  }
+
+  public isSupported(profile: number): boolean {
+    let retVal = false;
+
+    switch (profile) {
+      case 10: // On/Off
+      case 15: // Dimmer
+        retVal = true;
+        break;
+      case 1: // Base Station
+      case 3014: // Netatmo Weather Base Station
+      case 3015: // Netatmo Weather Outdoor Thermometer
+      case 3017: // Netatmo Weather Rain Gauge
+      case 3023: // Netatmo Weather Wind Gauge
+      case 3026: // Netatmo Welcome Camera
+      case 3027: // Netatmo Presence Camera
+        retVal = false;
+        break;
+      default:
+        retVal = false
+        break;
+    }
+    
+    return retVal;
+  }
+  
+  public brightnessSupported(profile: number): boolean {
+    let retVal = false;
+
+    switch (profile) {
+      case 10: // On/Off
+        retVal = true;
+        break;
+      case 1: // Base Station
+      case 15: // Dimmer
+      case 3014: // Netatmo Weather Base Station
+      case 3015: // Netatmo Weather Outdoor Thermometer
+      case 3017: // Netatmo Weather Rain Gauge
+      case 3023: // Netatmo Weather Wind Gauge
+      case 3026: // Netatmo Welcome Camera
+      case 3027: // Netatmo Presence Camera
+        retVal = false;
+        break;
+      default:
+        retVal = false
+        break;
+    }
+    
+    return retVal;
+  }
+
+  public profileName(profile: number): string {
+    let retVal = 'Unknown'
+
+    switch (profile) {
+      case 1: // Base Station
+        retVal = 'Coviva Base Station';
+        break;
+      case 10: 
+        retVal = 'Coviva On/Off Module';
+        break;
+      case 15:
+        retVal = 'Coviva Dimmer Module';
+        break;
+      case 3014:
+        retVal = 'Netatmo Weather Base Station';
+        break;
+      case 3015:
+        retVal = 'Netatmo Weather Outdoor Thermometer';
+        break;
+      case 3017:
+        retVal = 'Netatmo Weather Rain Gauge';
+        break;
+      case 3023:
+        retVal = 'Netatmo Weather Wind Gauge';
+        break;
+      case 3026:
+        retVal = 'Netatmo Welcome Camera';
+        break;
+      case 3027:
+        retVal = 'Netatmo Presence Camera';
+        break;
+      default:
+        retVal = 'Unknown';
+        break;
+    }
+    
+    return retVal;
   }
 
   // Create the "Promise Controller" object that will co-ordinate responses to
@@ -618,9 +728,8 @@ class Session {
         this._cachedDevices[i].name = decodeURIComponent(this._cachedDevices[i].name);
 
         // Parse state and brightness
-        if (this._cachedDevices[i].profile == 10 || this._cachedDevices[i].profile == 15) {
-          // On/Off (10) or Dimmable (15) module type
-          this.log.info('Parsing state for device [%s] with supported profile [%d]', this._cachedDevices[i].name, this._cachedDevices[i].profile);
+        if (this.isSupported(this._cachedDevices[i].profile)) {
+          this.log.info('Parsing state for device [%s] with supported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
           // Initialise "data" object within Coviva_Node to hold parsed state
           this._cachedDevices[i].data = {
             online: true,
@@ -636,7 +745,7 @@ class Session {
               // On/Off
               this._cachedDevices[i].data.state = (msg_attribute.current_value == 0) ? false : true;
             }
-            else if (msg_attribute.type == 2 && this._cachedDevices[i].profile == 15) {
+            else if (msg_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
               // Brightness
               this._cachedDevices[i].data.brightness = msg_attribute.current_value;
             }
@@ -644,7 +753,7 @@ class Session {
         }
         // Add support for more profile IDs here
         else if (!this._startedUp) {
-          this.log.info('Ignoring device [%s] with unsupported profile [%d]', this._cachedDevices[i].name, this._cachedDevices[i].profile);
+          this.log.info('Ignoring device [%s] with unsupported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
         }
       }
 
@@ -698,7 +807,7 @@ class Session {
               // the above code for handling a GET:all.
               // When we support more device types (profile IDs) we will probably want
               // to address this double-maintenance aspect of the code
-              if (this._cachedDevices[i].profile == 10 || this._cachedDevices[i].profile == 15) {
+              if (this.isSupported(this._cachedDevices[i].profile)) {
                 // Parse state and brightness
                 if      (new_attribute.type == 1) {
                   const new_value = (new_attribute.current_value == 0) ? false : true;
@@ -709,7 +818,7 @@ class Session {
 
                   this._cachedDevices[i].data.state = new_value;
                 }
-                else if (new_attribute.type == 2 && this._cachedDevices[i].profile == 15) {
+                else if (new_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
                   if (this._cachedDevices[i].data.brightness != new_attribute.current_value) {
                     genuine_update = true;
                   }
@@ -756,7 +865,7 @@ class Session {
     for (let i=0; i < this._cachedDevices.length; i++) {
       const msg_node = this._cachedDevices[i];
 
-      if (msg_node.profile == 10 || msg_node.profile == 15) {
+      if (this.isSupported(msg_node.profile)) {
         let node_debug = 'Node: ' + decodeURIComponent(msg_node.name);
 
         for (let j=0; j < msg_node.attributes.length; j++) {
@@ -765,7 +874,7 @@ class Session {
           if      (msg_attribute.type == 1) {
             node_debug = node_debug + ' OnOffState: [' + msg_attribute.current_value + ']';
           }
-          else if (msg_attribute.type == 2 && msg_node.profile == 15) {
+          else if (msg_attribute.type == 2 && this.brightnessSupported(msg_node.profile)) {
             node_debug = node_debug + ' Brightness: [' + msg_attribute.current_value + ']';
           }
         }
