@@ -557,14 +557,16 @@ class Session {
       if (this._outstandingPings > 1) {
         this.log.warn('Outstanding pings: %d', this._outstandingPings);
       }
-/*
-      if (this._outstandingPings > 3) {
-        this.log.warn('Reconnecting to Coviva due to outstanding pings');
-
+      try {
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        this.ws!.send(msg);
+        /* eslint-enable @typescript-eslint/no-non-null-assertion */
+      }
+      catch (e) {
+        this.log.warn('Unable to send ping');
         this._delayed.push(msg);
         this.login();
       }
-*/
     }
     
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -777,7 +779,7 @@ class Session {
 
         // Parse state and brightness
         if (this.isSupported(this._cachedDevices[i].profile)) {
-          this.log.info('Parsing state for device [%s] with supported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
+          this.log.debug('Parsing state for device [%s] with supported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
           // Initialise "data" object within Coviva_Node to hold parsed state
           this._cachedDevices[i].data = {
             online: true,
