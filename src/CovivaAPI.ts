@@ -312,6 +312,8 @@ class Session {
   // Array of delayed messages to send
   private _delayed:         string[] = [];
 
+  private _outstandingPings = 0;
+
   constructor(
     private _username:        string,
     private _password:        string,
@@ -550,11 +552,23 @@ class Session {
   public sendMessage(msg): void {
     this.log.info('WS Send: [' + msg + ']');
 
-    if (typeof this.ws !== undefined) {
+    if (msg == 'ping') {
+      this._outstandingPings++;
+      if (this._outstandingPings > 1) {
+        this.log.warn('Outstanding pings: %d', this._outstandingPings);
+      }
+      if (this._outstandingPings > 3) {
+        this.log.warn('Reconnecting to Coviva due to outstanding pings');
+
+        this._delayed.push(msg);
+        this.login();
+      }
+    }
+    
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    else if ((typeof this.ws !== undefined) && (this.ws!.readyState !== WebSocket.CLOSED)) {
       try {
-        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         this.ws!.send(msg);
-        /* eslint-enable @typescript-eslint/no-non-null-assertion */
       }
       catch (e) {
         this.log.warn('Unable to send message [' + msg + ']');
@@ -566,6 +580,17 @@ class Session {
         this.login();
       }
     }
+    else {
+      try {
+        this.log.info('Reopening WebSocket to send message');
+        this._delayed.push(msg);
+        this.login();
+      }
+      catch (e) {
+        this.log.warn('Unable to send message [' + msg + ']');
+      }
+    }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 
   public isSupported(profile: number): boolean {
@@ -710,6 +735,9 @@ class Session {
     if (data == 'pong') {
       // Ignore responses to a "ping"
       this.log.info('Received PONG');
+
+      this._outstandingPings = 0;
+
       return;
     }
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.20 (2020-12-01)
+
+### Bug Fixes
+
+* Add check of WebSocket state before sending message
+* Reconnect if there are more than 3 outstanding pings
+
 ## 0.1.19 (2020-12-01)
 
 ### Bug Fixes
