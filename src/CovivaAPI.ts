@@ -792,11 +792,11 @@ class Session {
 
             if      (msg_attribute.type == 1) {
               // On/Off
-              this._cachedDevices[i].data.state = (msg_attribute.current_value == 0) ? false : true;
+              this._cachedDevices[i].data.state = (msg_attribute.target_value == 0) ? false : true;
             }
             else if (msg_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
               // Brightness
-              this._cachedDevices[i].data.brightness = msg_attribute.current_value;
+              this._cachedDevices[i].data.brightness = msg_attribute.target_value;
             }
           }
         }
@@ -864,7 +864,7 @@ class Session {
 
                 // Parse state and brightness
                 if      (new_attribute.type == 1) {
-                  const new_value = (new_attribute.current_value == 0) ? false : true;
+                  const new_value = (new_attribute.target_value == 0) ? false : true;
 
                   if (this._cachedDevices[i].data.state != new_value) {
                     this.log.info('Device [%s] state changed from [%s] to [%s]', this._cachedDevices[i].name, this._cachedDevices[i].data.state.toString(), new_value.toString());
@@ -877,15 +877,15 @@ class Session {
                   this._cachedDevices[i].data.state = new_value;
                 }
                 else if (new_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
-                  if (this._cachedDevices[i].data.brightness != new_attribute.current_value) {
-                    this.log.info('Device [%s] brightness changed from [%d] to [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.current_value);
+                  if (this._cachedDevices[i].data.brightness != new_attribute.target_value) {
+                    this.log.info('Device [%s] brightness changed from [%d] to [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.target_value);
                     genuine_update = true;
                   }
                   else {
-                    this.log.info('Device [%s] brightness remained [%d] [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.current_value);
+                    this.log.info('Device [%s] brightness remained [%d] [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.target_value);
                   }
 
-                  this._cachedDevices[i].data.brightness = new_attribute.current_value;
+                  this._cachedDevices[i].data.brightness = new_attribute.target_value;
                 }
               }
 
@@ -938,10 +938,10 @@ class Session {
           const msg_attribute = msg_node.attributes[j];
 
           if      (msg_attribute.type == 1) {
-            node_debug = node_debug + ' OnOffState: [' + msg_attribute.current_value + ']';
+            node_debug = node_debug + ' OnOffState: [' + msg_attribute.target_value + ']';
           }
           else if (msg_attribute.type == 2 && this.brightnessSupported(msg_node.profile)) {
-            node_debug = node_debug + ' Brightness: [' + msg_attribute.current_value + ']';
+            node_debug = node_debug + ' Brightness: [' + msg_attribute.target_value + ']';
           }
         }
 

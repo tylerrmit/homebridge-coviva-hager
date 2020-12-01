@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.25 (2020-12-01)
+
+### Bug Fixes
+
+* Correct interpretation of current_state vs target_state from incoming Coviva events
+
 ## 0.1.24 (2020-12-01)
 
 ### Bug Fixes
