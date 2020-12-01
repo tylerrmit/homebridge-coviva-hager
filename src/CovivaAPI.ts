@@ -887,20 +887,23 @@ class Session {
 
                   this._cachedDevices[i].data.brightness = new_attribute.target_value;
                 }
-              }
 
-              // Tell HomeKit!
-              // We want HomeKit to know immediately that the device status has changed,
-              // and what the new status is
+                // Tell HomeKit!
+                // We want HomeKit to know immediately that the device status has changed,
+                // and what the new status is
 
-              // Potential performance improvement: Check if the status REALLY changed
-              // before bothering HomeKit?  I'm assuming it's not a bother
-              if (genuine_update) {
-                this.log.info('Sending update to HomeKit');
-                this.platform.refreshDeviceStates([this._cachedDevices[i]]);
+                // Potential performance improvement: Check if the status REALLY changed
+                // before bothering HomeKit?  I'm assuming it's not a bother
+                if (genuine_update) {
+                  this.log.info('Sending update to HomeKit');
+                  this.platform.refreshDeviceStates([this._cachedDevices[i]]);
+                }
+                else {
+                  this.log.info('Not sending update to HomeKit');
+                }
               }
               else {
-                this.log.info('Not sending update to HomeKit');
+                this.log.debug('Ignoring update for device [%s] [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
               }
 
               // We found what we were looking for, so break out of the loops

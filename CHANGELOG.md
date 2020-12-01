@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.1.26 (2020-12-01)
+## 0.1.27 (2020-12-01)
 
 ### Bug Fixes
 
+* Improve log messages when ignoring events from non-supported devices
 * Correct identification of whether a device supports Brightness attribute or not
 * Correct interpretation of current_state vs target_state from incoming Coviva events
 * Correct interpretation of current_state vs target_state from incoming Coviva events
