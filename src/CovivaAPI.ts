@@ -998,7 +998,7 @@ export class CovivaAPI {
   }
 
   public async discoverDevices(): Promise<Coviva_Node[]> {
-    if (!this.session?.hasValidToken()) {
+    if (!this.session?.hasToken()) {
       this.log.warn('No valid token on discoverDevices()');
       await this.session?.login();
     }
@@ -1034,7 +1034,7 @@ export class CovivaAPI {
   // Send a command to the Coviva API to change the state of a device (node) attribute
   public async setDeviceState<Method extends CovivaApiMethod>
   (deviceId: string, method: Method, payload: CovivaApiPayload<Method>): Promise<void> {
-    if (!this.session?.hasValidToken()) {
+    if (!this.session?.hasToken()) {
       this.log.warn('No valid token on setDeviceState()');
       await this.session?.login();
     }
