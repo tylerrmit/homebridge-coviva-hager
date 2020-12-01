@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.24 (2020-12-01)
+
+### Bug Fixes
+
+* Capture debug information about what HomeKit is told about device states
+
 ## 0.1.23 (2020-12-01)
 
 ### Bug Fixes

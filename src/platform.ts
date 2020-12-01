@@ -184,7 +184,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     // Refresh device states
     for (const device of devices) {
       // Only do this for supported devices that would have been registered with HomeKit
-      if (device.profile == 10 || device.profile == 15) {
+      if (this.covivaAPI.session.isSupported(device.profile)) {
         const uuid = this.api.hap.uuid.generate(this.covivaAPI.covivaId?.toUpperCase() + device.id.toString());
 
         const homebridgeAccessory = this.configured_accessories.get(uuid);
@@ -208,24 +208,21 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
     // Construct new accessory
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    switch (device.profile) {
-      case 10:
-        new LightAccessory(this, homebridgeAccessory, device as any);
-        break;
 
-      case 15:
-        new DimmableLightAccessory(this, homebridgeAccessory, device as any);
-        break;
-
-      default:
-        if (!this.failedToInitAccessories.get(device.profile)) {
-          this.log.warn('Could not init class for device type [%d]', device.profile);
-          this.failedToInitAccessories.set(device.profile, []);
-        }
-        /* eslint-disable @typescript-eslint/no-non-null-assertion */
-        this.failedToInitAccessories.set(device.profile, [uuid, ...this.failedToInitAccessories.get(device.profile)!]);
-        /* eslint-enable @typescript-eslint/no-non-null-assertion */
-        break;
+    if (this.covivaAPI.session.brightnessSupported(device.profile)) {
+      new DimmableLightAccessory(this, homebridgeAccessory, device as any);
+    }
+    else if (this.covivaAPI.session.isSupported(device.profile)) {
+      new LightAccessory(this, homebridgeAccessory, device as any);
+    }
+    else {
+      if (!this.failedToInitAccessories.get(device.profile)) {
+        this.log.warn('Could not init class for device type [%d]', device.profile);
+        this.failedToInitAccessories.set(device.profile, []);
+      }
+      /* eslint-disable @typescript-eslint/no-non-null-assertion */
+      this.failedToInitAccessories.set(device.profile, [uuid, ...this.failedToInitAccessories.get(device.profile)!]);
+      /* eslint-enable @typescript-eslint/no-non-null-assertion */
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
   }
@@ -236,7 +233,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
       return [];
     }
     return devices
-      .filter(d => (d.profile == 10 || d.profile == 15));
+      .filter(d => (this.covivaAPI.session.isSupported(d.profile)));
      
     return devices; 
   }

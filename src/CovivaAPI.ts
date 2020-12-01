@@ -753,7 +753,6 @@ class Session {
       return;
     }
 
-    //if (json.hasOwnProperty('all')) {
     if (Object.prototype.hasOwnProperty.call(json, 'all')) {
       // THIS is the response to a "GET:all" that something might be waiting on!
 
@@ -816,6 +815,9 @@ class Session {
         this._pc_devicelist.resolve();
       }
 
+      this.log.info('Sending update to HomeKit');
+      this.platform.refreshDeviceStates(this._cachedDevices);
+
       this._startedUp = true;
     }
     else if (Object.prototype.hasOwnProperty.call(json, 'attribute')) {
@@ -858,19 +860,29 @@ class Session {
               // When we support more device types (profile IDs) we will probably want
               // to address this double-maintenance aspect of the code
               if (this.isSupported(this._cachedDevices[i].profile)) {
+                this.log.info('Received data for device [%s] [%s]', this._cachedDevices[i].name, data);
+
                 // Parse state and brightness
                 if      (new_attribute.type == 1) {
                   const new_value = (new_attribute.current_value == 0) ? false : true;
 
                   if (this._cachedDevices[i].data.state != new_value) {
+                    this.log.info('Device [%s] state changed from [%s] to [%s]', this._cachedDevices[i].name, this._cachedDevices[i].data.state.toString(), new_value.toString());
                     genuine_update = true;
+                  }
+                  else {
+                    this.log.info('Device [%s] state remained [%s] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].data.state.toString(), new_value.toString());
                   }
 
                   this._cachedDevices[i].data.state = new_value;
                 }
                 else if (new_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
                   if (this._cachedDevices[i].data.brightness != new_attribute.current_value) {
+                    this.log.info('Device [%s] brightness changed from [%d] to [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.current_value);
                     genuine_update = true;
+                  }
+                  else {
+                    this.log.info('Device [%s] brightness remained [%d] [%d]', this._cachedDevices[i].name, this._cachedDevices[i].data.brightness, new_attribute.current_value);
                   }
 
                   this._cachedDevices[i].data.brightness = new_attribute.current_value;
@@ -884,7 +896,11 @@ class Session {
               // Potential performance improvement: Check if the status REALLY changed
               // before bothering HomeKit?  I'm assuming it's not a bother
               if (genuine_update) {
+                this.log.info('Sending update to HomeKit');
                 this.platform.refreshDeviceStates([this._cachedDevices[i]]);
+              }
+              else {
+                this.log.info('Not sending update to HomeKit');
               }
 
               // We found what we were looking for, so break out of the loops
@@ -980,7 +996,7 @@ class Session {
 // The main class called by our CovivaHagerPlatform to handle communication to
 // the Coviva API.  The CovivaHagerPlatform will handle communication to HomeKit.
 export class CovivaAPI {
-  private session:  Session;
+  public session:  Session;
 
   private username: string | undefined;
   private password: string | undefined;
