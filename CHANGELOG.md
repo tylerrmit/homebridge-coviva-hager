@@ -2,28 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.1.25 (2020-12-01)
+## 0.1.26 (2020-12-01)
 
 ### Bug Fixes
 
+* Correct identification of whether a device supports Brightness attribute or not
 * Correct interpretation of current_state vs target_state from incoming Coviva events
-
-## 0.1.24 (2020-12-01)
-
-### Bug Fixes
-
+* Correct interpretation of current_state vs target_state from incoming Coviva events
 * Capture debug information about what HomeKit is told about device states
-
-## 0.1.23 (2020-12-01)
-
-### Bug Fixes
-
 * Changed some log messages from "info" to "debug"
-
-## 0.1.22 (2020-12-01)
-
-### Bug Fixes
-
 * Fixes to help maintain connectivity to Coviva
 
 

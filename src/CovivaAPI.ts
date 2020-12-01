@@ -626,11 +626,11 @@ class Session {
     let retVal = false;
 
     switch (profile) {
-      case 10: // On/Off
+      case 15: // Dimmer
         retVal = true;
         break;
       case 1: // Base Station
-      case 15: // Dimmer
+      case 10: // On/Off
       case 3014: // Netatmo Weather Base Station
       case 3015: // Netatmo Weather Outdoor Thermometer
       case 3017: // Netatmo Weather Rain Gauge
