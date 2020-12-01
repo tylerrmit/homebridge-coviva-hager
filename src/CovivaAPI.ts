@@ -557,12 +557,14 @@ class Session {
       if (this._outstandingPings > 1) {
         this.log.warn('Outstanding pings: %d', this._outstandingPings);
       }
+/*
       if (this._outstandingPings > 3) {
         this.log.warn('Reconnecting to Coviva due to outstanding pings');
 
         this._delayed.push(msg);
         this.login();
       }
+*/
     }
     
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -734,9 +736,8 @@ class Session {
   _tryUnpack(data) {
     if (data == 'pong') {
       // Ignore responses to a "ping"
-      this.log.info('Received PONG');
-
       this._outstandingPings = 0;
+      this.log.info('Received PONG [%d]', this._outstandingPings);
 
       return;
     }
