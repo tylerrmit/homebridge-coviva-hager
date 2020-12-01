@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.23 (2020-12-01)
+
+### Bug Fixes
+
+* Changed some log messages from "info" to "debug"
+
 ## 0.1.22 (2020-12-01)
 
 ### Bug Fixes

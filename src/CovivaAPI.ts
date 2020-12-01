@@ -550,7 +550,7 @@ class Session {
 
   // Send a message/command to Coviva via the WebSocket
   public sendMessage(msg): void {
-    this.log.info('WS Send: [' + msg + ']');
+    this.log.debug('WS Send: [' + msg + ']');
 
     if (msg == 'ping') {
       this._outstandingPings++;
@@ -739,7 +739,7 @@ class Session {
     if (data == 'pong') {
       // Ignore responses to a "ping"
       this._outstandingPings = 0;
-      this.log.info('Received PONG [%d]', this._outstandingPings);
+      this.log.debug('Received PONG [%d]', this._outstandingPings);
 
       return;
     }
