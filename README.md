@@ -1,6 +1,8 @@
 # homebridge-coviva-hager
 Homebridge plugin for Coviva by Hager
 
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 ## Overview
 
 Homebridge plugin for Hager Coviva devices (unofficial)
@@ -30,6 +32,8 @@ and I'll see what I can do.
 Known Coviva profile numbers:
 
 * 1    = Base Station
+* 10   = On/Off Module
+	* Attribute Type 1 = On/Off [0-1]
 * 15   = Dimmer Module
 	* Attribute Type 1 = On/Off [0-1]
 	* Attribute Type 2 = Brightness [0-100]
@@ -87,8 +91,8 @@ All options
       "username": "(same as for Coviva App)",
       "password": "(same as for Coviva App)",
       "covivaId": "(same as for Coviva App)",
-      "pollingInterval": 0,
-      "pingInterval": 60
+      "pollingInterval": 120,
+      "pingInterval": 20
     }
   }
 ]
@@ -100,16 +104,16 @@ The covivaId is the same detail you use when logging into the phone app.  It's a
 hexadecimal string that represents your site or Coviva hub.
 
 The pollingInterval specifies that the Homebridge plugin should actively ask Coviva for
-an update on all devices and their status every N seconds.  The default is zero, meaning,
-don't poll for status updates at all.  I recommend you leave this at zero unless you
-encounter issues.  In my experience, the Coviva API is very good at proactively sending
-status updates, unprompted, even in the absence of state changes.
+an update on all devices and their status every N seconds.  The default is 120.
+In theory, the Coviva API is very good at proactively sending status updates, unprompted,
+so you could set this to zero to disable all polling.  But I recommend polling every
+few minutes, just in case.
 
 The pingInterval will specify that the plugin should send a simple "ping" message to
 Coviva every N seconds, to which Coviva should simply reply "pong".  This ensures that
 the connection is kept alive.  If you set it to zero, no pings will be sent at all.
-The default is 60, I.E. one ping per 60 seconds.  I believe the iPhone app sends a ping
-even more frequently, so 60 seconds seems reasonable.
+The default is 20, I.E. one ping per 20 seconds.  I believe the iPhone app sends a ping
+even more frequently.  When I set this to 60 seconds, I found I had occasional disconnections.
 
 ## Tested devices
 
