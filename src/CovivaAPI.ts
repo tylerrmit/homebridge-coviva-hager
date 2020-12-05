@@ -803,6 +803,21 @@ class Session {
         // Add support for more profile IDs here
         else if (!this._startedUp) {
           this.log.info('Ignoring device [%s] with unsupported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
+
+          // Build up a list of attribute types, max and min values
+          for (let j=0; j < this._cachedDevices[i].attributes.length; j++) {
+            const msg_attribute = this._cachedDevices[i].attributes[j];
+
+            this.log.info('Attribute type [%d] min [%s] max [%s] current [%s] unit [%s] step value [%s] state [%s]',
+              msg_attribute.type,
+              msg_attribute.minimum.toString(),
+              msg_attribute.maximum.toString(),
+              msg_attribute.current_value.toString(),
+              msg_attribute.unit,
+              msg_attribute.step_value.toString(),
+              msg_attribute.state.toString()
+            );
+          }
         }
       }
 
