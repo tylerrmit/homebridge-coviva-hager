@@ -76,10 +76,11 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
     if (typeof config.options.enableExperimental === 'undefined') {
       this.enableExperimental = false;
-      this.log.info('Support for experimental device types is enabled');
+      this.log.info('Support for experimental device types is disabled');
     }
     else {
       this.enableExperimental = config.options.enableExperimental;
+      this.log.info('Support for experimental device types is enabled');
     }
 
     this.covivaId = options.covivaId;

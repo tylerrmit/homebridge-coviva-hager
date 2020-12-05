@@ -76,6 +76,7 @@
     },
     "options.covivaId",
     "options.pollingInterval",
-    "options.pingInterval"
+    "options.pingInterval",
+    "options.enableExperimental"
   ]
 }
