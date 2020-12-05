@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.31 (2020-12-06)
+
+### Changes
+
+* Add new 'enableExperimental' configuration option to 'opt in' to new, untested device type support
+
 ## 0.1.30 (2020-12-05)
 
 ### Changes

@@ -30,9 +30,10 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
   public readonly configured_accessories: Map<string, HomebridgeAccessory<any>> = new Map();
 
   // Intervals for polling and pinging the Coviva API, plus a record of our Coviva ID
-  private readonly pollingInterval: number = 180;
-  private readonly pingInterval:    number = 60;
-  public  readonly covivaId:        string = '';
+  private readonly pollingInterval:    number = 180;
+  private readonly pingInterval:       number = 60;
+  private readonly enableExperimental: boolean = false;
+  public  readonly covivaId:           string = '';
 
   // Object that will handle commands to Coviva API
   public readonly covivaAPI!: CovivaAPI;
@@ -73,6 +74,14 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
       this.pingInterval = config.options.pingInterval;
     }
 
+    if (typeof config.options.enableExperimental === 'undefined') {
+      this.enableExperimental = false;
+      this.log.info('Support for experimental device types is enabled');
+    }
+    else {
+      this.enableExperimental = config.options.enableExperimental;
+    }
+
     this.covivaId = options.covivaId;
 
     // Create Coviva API instance to handle communication with Coviva
@@ -80,6 +89,7 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
       options.username,
       options.password,
       options.covivaId,
+      this.enableExperimental,
       this.log,
       this // Passing a reference to this object for the purposes of passing incoming device update signals to HomeKit
     );

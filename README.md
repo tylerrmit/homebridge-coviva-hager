@@ -94,7 +94,8 @@ All options
       "password": "(same as for Coviva App)",
       "covivaId": "(same as for Coviva App)",
       "pollingInterval": 120,
-      "pingInterval": 20
+      "pingInterval": 20,
+      "enableExperimental": false
     }
   }
 ]
@@ -116,6 +117,12 @@ Coviva every N seconds, to which Coviva should simply reply "pong".  This ensure
 the connection is kept alive.  If you set it to zero, no pings will be sent at all.
 The default is 20, I.E. one ping per 20 seconds.  I believe the iPhone app sends a ping
 even more frequently.  When I set this to 60 seconds, I found I had occasional disconnections.
+
+The enableExperimental option allows you to enable support for any new device types listed
+as "experimental" below.  These are devices for which we have recently attempted to add
+support based on a request and trace information from a user in the field, but we have
+not been able to test ourselves.  Set this option to 'true' to opt-in to support for those
+devices, and help with testing.  The default is 'false': experimental devices are ignored.
 
 ## Tested devices
 

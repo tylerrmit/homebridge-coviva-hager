@@ -281,6 +281,7 @@ class Session {
   private username!:           string;
   private password!:           string;
   private covivaId!:           string;
+  private enableExperimental:  boolean;
   private log:                 Logger;
   private platform:            CovivaHagerPlatform;
 
@@ -320,17 +321,19 @@ class Session {
   private _outstandingPings = 0;
 
   constructor(
-    private _username:        string,
-    private _password:        string,
-    private _covivaId:        string,
-    private _log:             Logger,
-    private _platform:        CovivaHagerPlatform
+    private _username:           string,
+    private _password:           string,
+    private _covivaId:           string,
+    private _enableExperimental: boolean,
+    private _log:                Logger,
+    private _platform:           CovivaHagerPlatform
   ) {
-    this.username        = _username;
-    this.password        = _password;
-    this.covivaId        = _covivaId;
-    this.log             = _log;
-    this.platform        = _platform;
+    this.username           = _username;
+    this.password           = _password;
+    this.covivaId           = _covivaId;
+    this.enableExperimental = _enableExperimental;
+    this.log                = _log;
+    this.platform           = _platform;
 
     // Coviva Hager API wants some sort of device id as a string of hex,
     // to uniquely identify each iOS app, etc.
@@ -608,8 +611,10 @@ class Session {
     switch (profile) {
       case 10: // On/Off
       case 15: // Dimmer
-      case 2002: // Shutter/blinds
         retVal = true;
+        break;
+      case 2002: // Shutter/blinds
+        retVal = this.enableExperimental;
         break;
       case 1: // Base Station
       case 3014: // Netatmo Weather Base Station
@@ -1130,30 +1135,33 @@ export class CovivaAPI {
   private username: string | undefined;
   private password: string | undefined;
   public  covivaId: string | undefined;
-
+  private enableExperimental = false;
   private log: Logger;
 
   private platform: CovivaHagerPlatform;
 
   constructor(
-    private _username:        string,
-    private _password:        string,
-    private _covivaId:        string,
-    private _log:             Logger,
-    private _platform:        CovivaHagerPlatform
+    private _username:           string,
+    private _password:           string,
+    private _covivaId:           string,
+    private _enableExperimental: boolean,
+    private _log:                Logger,
+    private _platform:           CovivaHagerPlatform
   ) {
     // Save config
-    this.username        = _username;
-    this.password        = _password;
-    this.covivaId        = _covivaId.toUpperCase(); 
-    this.log             = _log;
-    this.platform        = _platform;
+    this.username           = _username;
+    this.password           = _password;
+    this.covivaId           = _covivaId.toUpperCase(); 
+    this.enableExperimental = _enableExperimental;
+    this.log                = _log;
+    this.platform           = _platform;
 
     // Create a new Session
     this.session = new Session(
       this.username,
       this.password,
       this.covivaId,
+      this.enableExperimental,
       this.log,
       this.platform
     );

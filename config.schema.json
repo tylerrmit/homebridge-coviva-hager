@@ -50,6 +50,13 @@
             "required": false,
             "minimum": 0,
             "default": 20
+          },
+          "enableExperimental": {
+            "title": "Enable Experimental Device Support",
+            "type": "boolean",
+            "description": "Enable support for new device types that are still considered 'Experimental'.  These are device types where we have had someone provide information from their Homebridge logs to help us add support, but they have not been tested and verified as working yet.  Default is 'false'.  Set this to 'true' if you are helping to test a new device type.",
+            "required": false,
+            "default": false
           }
         }
       }

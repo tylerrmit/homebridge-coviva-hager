@@ -6,7 +6,8 @@ type Config = {
     password?: string,
     covivaId?: string,
     pollingInterval?: number,
-    pingInterval?: number
+    pingInterval?: number,
+    enableExperimental?: boolean
   }
 }
 
