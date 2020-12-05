@@ -25,20 +25,25 @@ import {CovivaHagerPlatform} from './platform';
 // Store the parsed state information for each characteristic
 // of a device, plus whether it is online or offline
 export type CovivaDeviceState = {
-  online:     boolean,
-  state:      boolean,
-  brightness: number
+  online:          boolean,
+  state:           boolean,
+  brightness:      number,
+  currentposition: number,
+  targetposition:  number,
+  positionstate:   number
 };
 
 // A list of supported commands to send to a Coviva device
-export type CovivaApiMethod = 'turnOnOff' | 'brightnessSet';
+export type CovivaApiMethod = 'turnOnOff' | 'brightnessSet' | 'targetPositionSet';
 
 // Valid settings for each command
 export type CovivaApiPayload<Method extends CovivaApiMethod> = Method extends 'turnOnOff'
   ? { value: 0 | 1 }
   : Method extends 'brightnessSet'
     ? { value: number }
-    : never;
+    : Method extends 'targetPositionSet'
+      ? { value: number }
+      : never;
 
 
 /**********************/
@@ -603,6 +608,7 @@ class Session {
     switch (profile) {
       case 10: // On/Off
       case 15: // Dimmer
+      case 2002: // Shutter/blinds
         retVal = true;
         break;
       case 1: // Base Station
@@ -631,6 +637,33 @@ class Session {
         break;
       case 1: // Base Station
       case 10: // On/Off
+      case 2002: // Shutter/blinds
+      case 3014: // Netatmo Weather Base Station
+      case 3015: // Netatmo Weather Outdoor Thermometer
+      case 3017: // Netatmo Weather Rain Gauge
+      case 3023: // Netatmo Weather Wind Gauge
+      case 3026: // Netatmo Welcome Camera
+      case 3027: // Netatmo Presence Camera
+        retVal = false;
+        break;
+      default:
+        retVal = false
+        break;
+    }
+    
+    return retVal;
+  }
+
+  public blindsSupported(profile: number): boolean {
+    let retVal = false;
+
+    switch (profile) {
+      case 2002: // Shutter/blinds
+        retVal = true;
+        break;
+      case 1: // Base Station
+      case 10: // On/Off
+      case 15: // Dimmer
       case 3014: // Netatmo Weather Base Station
       case 3015: // Netatmo Weather Outdoor Thermometer
       case 3017: // Netatmo Weather Rain Gauge
@@ -781,14 +814,19 @@ class Session {
           this.log.debug('Parsing state for device [%s] with supported profile [%d] [%s]', this._cachedDevices[i].name, this._cachedDevices[i].profile, this.profileName(this._cachedDevices[i].profile));
           // Initialise "data" object within Coviva_Node to hold parsed state
           this._cachedDevices[i].data = {
-            online: true,
-            state:  true,
-            brightness: 0
+            online:          true,
+            state:           true,
+            brightness:      0,
+            currentposition: 0,
+            targetposition:  0,
+            positionstate:   0
           };
 
           // Parse attributes to find state (On/Off) and brightness
           for (let j=0; j < this._cachedDevices[i].attributes.length; j++) {
             const msg_attribute = this._cachedDevices[i].attributes[j];
+
+            this._cachedDevices[i].attributes[j].unit = decodeURIComponent(this._cachedDevices[i].attributes[j].unit);
 
             if      (msg_attribute.type == 1) {
               // On/Off
@@ -797,6 +835,31 @@ class Session {
             else if (msg_attribute.type == 2 && this.brightnessSupported(this._cachedDevices[i].profile)) {
               // Brightness
               this._cachedDevices[i].data.brightness = msg_attribute.target_value;
+            }
+            else if (msg_attribute.type == 15 && this.blindsSupported(this._cachedDevices[i].profile)) {
+              // Position from Coviva  perspective:   0 = fully open, 100 = fully closed
+              // Position from HomeKit perspecitve: 100 = fully open,   0 = fully closed
+              // Therefore flip it
+
+              this._cachedDevices[i].data.currentposition = (msg_attribute.current_value - 100) * -1;
+              this._cachedDevices[i].data.targetposition  = (msg_attribute.target_value  - 100) * -1;
+
+              if (this._cachedDevices[i].data.currentposition == this._cachedDevices[i].data.targetposition) {
+                this._cachedDevices[i].data.positionstate = 2; // STOPPED
+              }
+              else if (this._cachedDevices[i].data.currentposition > this._cachedDevices[i].data.targetposition) {
+                this._cachedDevices[i].data.positionstate = 0; // DECREASING (closing)
+              }
+              else {
+                this._cachedDevices[i].data.positionstate = 1; // INCREASING (opening)
+              }
+
+              this.log.info(
+                'Roller Blind [%s] Current Position [%d] Target Position [%d] PositionState [%d] (ALL)',
+                this._cachedDevices[i].data.currentposition,
+                this._cachedDevices[i].data.targetposition,
+                this._cachedDevices[i].data.positionstate
+              );
             }
           }
         }
@@ -902,6 +965,50 @@ class Session {
 
                   this._cachedDevices[i].data.brightness = new_attribute.target_value;
                 }
+                else if (new_attribute.type == 15 && this.blindsSupported(this._cachedDevices[i].profile)) {
+                  // Position from Coviva  perspective:   0 = fully open, 100 = fully closed
+                  // Position from HomeKit perspecitve: 100 = fully open,   0 = fully closed
+                  // Therefore flip it
+
+                  new_attribute.current_value = (new_attribute.current_value - 100) * -1;
+                  new_attribute.target_value  = (new_attribute.target_value  - 100) * -1;
+
+                  if (new_attribute.current_value == new_attribute.target_value) {
+                    this._cachedDevices[i].data.positionstate = 2; // STOPPED
+                  }
+                  else if (new_attribute.current_value > new_attribute.target_value) {
+                    this._cachedDevices[i].data.positionstate = 0; // DECREASING (closing)
+                  }
+                  else {
+                    this._cachedDevices[i].data.positionstate = 1; // INCREASING (opening)
+                  }
+
+                  if ((this._cachedDevices[i].data.targetposition != new_attribute.target_value) || (this._cachedDevices[i].data.currentposition != new_attribute.current_value)) {
+                    this.log.info(
+                      'Device [%s] position changed from Current [%d] Target [%d] to Current [%d] Target [%d]',
+                      this._cachedDevices[i].name,
+                      this._cachedDevices[i].data.currentposition, this._cachedDevices[i].data.targetposition,
+                      new_attribute.current_value, new_attribute.target_value
+                    );
+                    genuine_update = true;
+                  }
+                  else {
+                    this.log.info(
+                      'Device [%s] position remained at Current [%d] Target [%d]',
+                      this._cachedDevices[i].name, new_attribute.current_value, new_attribute.target_value
+                    );
+                  }
+
+                  this._cachedDevices[i].data.currentposition = new_attribute.current_value;
+                  this._cachedDevices[i].data.targetposition  = new_attribute.target_value;
+              
+                  this.log.info(
+                    'Roller Blind [%s] Current Position [%d] Target Position [%d] PositionState [%d] (Attr)',
+                    this._cachedDevices[i].data.currentposition,
+                    this._cachedDevices[i].data.targetposition,
+                    this._cachedDevices[i].data.positionstate
+                  );
+                }
 
                 // Tell HomeKit!
                 // We want HomeKit to know immediately that the device status has changed,
@@ -961,10 +1068,14 @@ class Session {
           else if (msg_attribute.type == 2 && this.brightnessSupported(msg_node.profile)) {
             node_debug = node_debug + ' Brightness: [' + msg_attribute.target_value + ']';
           }
+          else if (msg_attribute.type == 15 && this.blindsSupported(msg_node.profile)) {
+            node_debug = node_debug + ' Target Position: [' + msg_attribute.target_value + ']';
+          }
         }
 
         node_debug = node_debug + ' data.state: [' + msg_node.data.state + ']';
         node_debug = node_debug + ' data.brightness: [' + msg_node.data.brightness + ']';
+        node_debug = node_debug + ' data.targetposition: [' + msg_node.data.targetposition + ']';
 
         this.log.debug(node_debug);
       }

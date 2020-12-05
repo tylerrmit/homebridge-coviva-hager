@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.30 (2020-12-05)
+
+### Changes
+
+* Support for Coviva Roller / Shutter modules (to be tested)
+* Added python test programs for:
+  * Getting a dump of the Coviva configuration (get_all.py)
+  * Getting a dump of Coviva devices in the Coviva configuration (get_nodes.py)
+  * Setting an example node's example attribute to an example value (put.py)
+
 ## 0.1.29 (2020-12-05)
 
 ### Changes

@@ -5,7 +5,8 @@ import {Coviva_Node, CovivaAPI} from './CovivaAPI';
 import {
   BaseAccessory,
   DimmableLightAccessory,
-  LightAccessory
+  LightAccessory,
+  BlindsAccessory
 } from './accessories';
 
 import {CovivaHagerConfig} from './config';
@@ -211,6 +212,9 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
 
     if (this.covivaAPI.session.brightnessSupported(device.profile)) {
       new DimmableLightAccessory(this, homebridgeAccessory, device as any);
+    }
+    else if (this.covivaAPI.session.blindsSupported(device.profile)) {
+      new BlindsAccessory(this, homebridgeAccessory, device as any);
     }
     else if (this.covivaAPI.session.isSupported(device.profile)) {
       new LightAccessory(this, homebridgeAccessory, device as any);

@@ -37,6 +37,8 @@ Known Coviva profile numbers:
 * 15   = Dimmer Module
 	* Attribute Type 1 = On/Off [0-1]
 	* Attribute Type 2 = Brightness [0-100]
+* 2002 = Shutter/blinds Module
+        * Attribute Type 15 = Position [0-100]
 * 3014 = Linked Netatmo Weather Base Station
 * 3015 = Linked Netatmo Outdoor Thermometer
 * 3017 = Linked Netatmo Rain Gauge
@@ -122,6 +124,10 @@ Tested:
 * Coviva Micro Module - On/Off with Neutral (TRM693AU)
 * Coviva Micro Module - Dimmer - 2 wire (TRM691AU)
 
+In progress:
+
+* Coviva Micro Module - Roller Blind / Shutter (TRM692G)
+
 ## Credits
 
 The code for this HomeKit plugin is based on @milo526/homebridge-tuya-web, adapted to
@@ -133,3 +139,4 @@ the activity of the iOS app and the web interface.  Yes, there's a web interface
 log into hager.com and look at your account, there will be a link to your Coviva Hub
 that will allow you to control it.
 
+benni4k for providing trace information for the Roller Blind / Shutter module
