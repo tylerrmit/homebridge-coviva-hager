@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.33 (2020-12-06)
+
+### Bug Fixes
+
+* Fix missing service type for Coviva Roller / Shutter modules
+
 ## 0.1.32 (2020-12-06)
 
 ### Changes

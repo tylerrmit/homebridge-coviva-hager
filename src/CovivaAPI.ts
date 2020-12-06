@@ -861,6 +861,7 @@ class Session {
 
               this.log.info(
                 'Roller Blind [%s] Current Position [%d] Target Position [%d] PositionState [%d] (ALL)',
+                this._cachedDevices[i].name,
                 this._cachedDevices[i].data.currentposition,
                 this._cachedDevices[i].data.targetposition,
                 this._cachedDevices[i].data.positionstate

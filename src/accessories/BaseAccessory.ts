@@ -97,6 +97,9 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
       case Categories.FAN:
         this.serviceType = platform.Service.Fanv2;
         break;
+      case Categories.WINDOW_COVERING:
+        this.serviceType = platform.Service.WindowCovering;
+        break;
       default:
         this.serviceType = platform.Service.AccessoryInformation;
     }
