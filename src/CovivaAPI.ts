@@ -1289,7 +1289,13 @@ export class CovivaAPI {
     }
 
     // Assemble the command, then ask the Session to send it to Coviva
-    const cmd = 'PUT:nodes/' + deviceId + '/attributes/' + attribute_id.toString() + '?target_value=' + payload.value;
+    let value = payload.value;
+    if (attribute_type == 15) {
+      value = (payload.value - 100) * -1;
+      this.log.info('Flipping value [%d] to [%d]', payload.value, value);
+    }
+
+    const cmd = 'PUT:nodes/' + deviceId + '/attributes/' + attribute_id.toString() + '?target_value=' + value;
 
     this.session?.sendMessage(cmd);
 
