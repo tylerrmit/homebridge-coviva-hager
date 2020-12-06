@@ -558,7 +558,12 @@ class Session {
 
   // Send a message/command to Coviva via the WebSocket
   public sendMessage(msg): void {
-    this.log.debug('WS Send: [' + msg + ']');
+    if (this.enableExperimental) {
+      this.log.info('WS Send: [' + msg + ']');
+    }
+    else {
+      this.log.debug('WS Send: [' + msg + ']');
+    }
 
     if (msg == 'ping') {
       this._outstandingPings++;
@@ -789,6 +794,10 @@ class Session {
     catch (e) {
       this.log.warn('Coviva API unable to parse JSON message [' + data + ']');
       return;
+    }
+
+    if (this.enableExperimental) {
+      this.log.info('WS Recv [%s]', json);
     }
 
     if (Object.prototype.hasOwnProperty.call(json, 'all')) {

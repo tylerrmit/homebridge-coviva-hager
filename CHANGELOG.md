@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.34 (2020-12-06)
+
+### Changes
+
+* Add extra logging for experimental device support
+
 ## 0.1.33 (2020-12-06)
 
 ### Bug Fixes
