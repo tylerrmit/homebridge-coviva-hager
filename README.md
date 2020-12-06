@@ -130,10 +130,11 @@ Tested:
 
 * Coviva Micro Module - On/Off with Neutral (TRM693AU)
 * Coviva Micro Module - Dimmer - 2 wire (TRM691AU)
-
-In progress:
-
 * Coviva Micro Module - Roller Blind / Shutter (TRM692G)
+
+Experimental:
+
+* None
 
 ## Credits
 
@@ -146,4 +147,6 @@ the activity of the iOS app and the web interface.  Yes, there's a web interface
 log into hager.com and look at your account, there will be a link to your Coviva Hub
 that will allow you to control it.
 
-benni4k for providing trace information for the Roller Blind / Shutter module
+benni4k for providing trace information for the Roller Blind / Shutter module, and working
+through multiple test versions of the plugin to help get support for that type of plugin
+working.
