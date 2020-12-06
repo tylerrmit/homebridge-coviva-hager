@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.37 (2020-12-07)
+
+#### Changes
+
+* Roller Shutter / Blinds support has been confirmed by a user to be working, and promoted to non-experimental
+
 ## 0.1.36 (2020-12-06)
 
 ### Bugfix

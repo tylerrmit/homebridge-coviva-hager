@@ -614,13 +614,19 @@ class Session {
     let retVal = false;
 
     switch (profile) {
+      // Supported
       case 10: // On/Off
       case 15: // Dimmer
+      case 2002: // Shutter/blinds
         retVal = true;
         break;
-      case 2002: // Shutter/blinds
+      // Experimental - opt in and get extra debug logs
+/*
+      case NNNN:
         retVal = this.enableExperimental;
         break;
+*/
+      // Not Supported
       case 1: // Base Station
       case 3014: // Netatmo Weather Base Station
       case 3015: // Netatmo Weather Outdoor Thermometer
@@ -1256,6 +1262,7 @@ export class CovivaAPI {
         attribute_type = 15;
         break;
       default:
+        attribute_type = 0;
         break;
     }
 
