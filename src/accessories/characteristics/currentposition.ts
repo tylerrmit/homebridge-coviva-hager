@@ -56,7 +56,7 @@ export class CurrentPositionCharacteristic extends CovivaCharacteristic {
     // This attribute cannot be set from HomeKit
     return;
 /*
-    this.accessory.setDeviceState('targetPositionSet', {value}, {targetposition: homekitValue}).then(() => {
+    this.accessory.setDeviceState('currentPositionSet', {value}, {targetposition: homekitValue}).then(() => {
       this.debug('CurrentPosition.setRemoteValue() [SET] %s', value);
       callback();
     }).catch(this.accessory.handleError('SET', callback));

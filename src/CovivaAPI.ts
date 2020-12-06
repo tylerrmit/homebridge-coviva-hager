@@ -1252,9 +1252,14 @@ export class CovivaAPI {
       case 'brightnessSet':
         attribute_type = 2;
         break;
+      case 'targetPositionSet':
+        attribute_type = 15;
+        break;
       default:
         break;
     }
+
+    this.log.debug('setDeviceState will look for attribute type [%d] for command [%s]', attribute_type, method);
 
     if (attribute_type == 0) {
       this.log.error('Invalid method: [ ' + method + ']');

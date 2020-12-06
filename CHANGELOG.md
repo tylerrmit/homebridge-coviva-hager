@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.35 (2020-12-06)
+
+### Bugfix
+
+* Link targetPositionSet command to Coviva attribute 15 for blinds
+
 ## 0.1.34 (2020-12-06)
 
 ### Changes
