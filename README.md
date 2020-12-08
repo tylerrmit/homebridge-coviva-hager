@@ -9,25 +9,31 @@ Homebridge plugin for Hager Coviva devices (unofficial)
 
 ## Features
 
-Currently, this plugin only supports a dimmer module, and I hope to add support for a switch
-module as soon as the parts arrive and are installed in my home.
 
-If you'd like me to add support for a different type of module, please have a look at your
-Homebridge log file.  For each unsupported device, you will see a message like this:
+This plugin supports on/off modules, dimmer modules, and roller shutter/blinds modules.
+
+Each Coviva module type has a "profile ID".  If you encounter a Coviva module type that is
+not (yet) supported, you will see a line like this in the Homebridge log file when Homebridge
+first starts up / restarts:
 
 ```
-Ignoring device [AAA] with unsupported profile [BBB]
+[CovivaHagerPlatform] Ignoring device [AAA] with unsupported profile [BBB] [Unknown]
+[CovivaHagerPlatform] Attribute type [5] min [0] max [50] current [19.200000762939453] unit [%C2%B0C] step value [0.5] state [1]
+[CovivaHagerPlatform] Attribute type [7] min [0] max [100] current [54] unit [%25] step value [1] state [1]
 ```
 
-where BBB is a number.  E.g. the profile number for the supported dimmer module is 15.
+Where [AAA] is the name of the device in the Coviva App, and [BBB] is the "profile ID"
+for that type of device.  Then there will be a further log message for each "attribute" of the module.
 
-Log an issue via GitHub with the following details:
+To request support for a new Coviva module type, please log an "issue" via GitHub,
+with the following details:
 
-* Profile number from the log message
-* Type of device
+* The log messages from the Homebridge log similar to the above examples, showing the "profile ID"
+  and details of the module's attributes
+* Your description of the type of the device
+* Your description of what state the device was in at the time (e.g. 'the blinds were 30% closed')
 * Coviva Part Number (if known)
 
-and I'll see what I can do.
 
 Known Coviva profile numbers:
 
@@ -38,31 +44,13 @@ Known Coviva profile numbers:
 	* Attribute Type 1 = On/Off [0-1]
 	* Attribute Type 2 = Brightness [0-100]
 * 2002 = Shutter/blinds Module
-        * Attribute Type 15 = Position [0-100]
+	* Attribute Type 15 = Position [0-100]
 * 3014 = Linked Netatmo Weather Base Station
 * 3015 = Linked Netatmo Outdoor Thermometer
 * 3017 = Linked Netatmo Rain Gauge
 * 3023 = Linked Netatmo Wind Meter
 * 3026 = Linked Netatmo Welcome Camera
 * 3027 = Linked Netatmo Presence Camera
-
-This Homebridge plugin, like the official Hager web interface (and probably the phone apps)
-connects to the Coviva API via a WebSocket.  The Coviva API will actually push notifications
-of events down the WebSocket to the Homebridge plugin immediately, so it should be able to
-keep track of state changes that were initiated elsewhere (lights operated at the switch or
-via another app) without the need for polling.
-
-You can link Netatmo devices to Coviva within the phone App, and I've actually found the Coviva
-phone app might actually be the fastest way for me to bring up live footage from my cameras.
-A side effect of this is that the Homebridge plugin is regularly receiving events from
-any linked Netatmo devices.  The plugin is currently ignoring them -- the Netatmo devices
-directly support HomeKit without the need for a HomeKit plugin.  However in future I might
-use it to e.g. gather a CSV log of temperatures from the Weather station over time.
-
-The Coviva API supports other commands relating to "groups" and "covivagrams" aka "homeegrams",
-however I have not attempted to do anything with these yet.  Perhaps it will make sense to
-add support for "groups", but for now I'm using HomeKit "rooms" to switch multiple lights at
-the same time.
 
 ## Configuration
 
@@ -123,6 +111,8 @@ as "experimental" below.  These are devices for which we have recently attempted
 support based on a request and trace information from a user in the field, but we have
 not been able to test ourselves.  Set this option to 'true' to opt-in to support for those
 devices, and help with testing.  The default is 'false': experimental devices are ignored.
+This option will also cause the plugin to log all messages sent to/received from the Coviva
+API in the Homebridge log file.
 
 ## Tested devices
 
