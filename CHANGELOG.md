@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.41 (2021-03-05)
 ## 0.1.40 (2021-03-05)
 
 ### Changes
 
 * Adjust "Serial Number" and "Model" types to avoid Homebridge warning messages
+* Ensure that the lenghs are >1 character
 
 ## 0.1.38 (2020-12-08)
 
