@@ -240,9 +240,9 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
             this.homebridgeAccessory.addService(this.platform.Service.AccessoryInformation));
     setCharacteristic(this.platform.Characteristic.Name, device.name);
 
-    setCharacteristic(this.platform.Characteristic.SerialNumber, this.deviceConfig.id);
+    setCharacteristic(this.platform.Characteristic.SerialNumber, this.deviceConfig.id.toString());
     setCharacteristic(this.platform.Characteristic.Manufacturer, PLUGIN_NAME);
-    setCharacteristic(this.platform.Characteristic.Model, this.categoryType);
+    setCharacteristic(this.platform.Characteristic.Model, this.categoryType.toString());
 
     // Update device specific state
     this.updateState(device.data);
