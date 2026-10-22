@@ -7,7 +7,8 @@ type Config = {
     covivaId?: string,
     pollingInterval?: number,
     pingInterval?: number,
-    enableExperimental?: boolean
+    enableExperimental?: boolean,
+    pilotWireModes?: { [value: string]: string }
   }
 }
 
