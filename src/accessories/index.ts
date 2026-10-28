@@ -3,3 +3,4 @@ export * from './DimmableLightAccessory';
 export * from './LightAccessory';
 export * from './SwitchAccessory';
 export * from './BlindsAccessory';
+export * from './PilotWireAccessory';

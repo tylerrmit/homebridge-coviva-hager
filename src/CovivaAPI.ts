@@ -30,11 +30,16 @@ export type CovivaDeviceState = {
   brightness:      number,
   currentposition: number,
   targetposition:  number,
-  positionstate:   number
+  positionstate:   number,
+  hvacmode?:       number,   // Pilot wire mode (attribute type 127), raw Coviva value
 };
 
+// Coviva/homee profile and attribute type used by electrical heating (pilot wire) modules
+export const PROFILE_ELECTRICAL_HEATING = 3024;
+export const ATTRIBUTE_HVAC_MODE        = 127;
+
 // A list of supported commands to send to a Coviva device
-export type CovivaApiMethod = 'turnOnOff' | 'brightnessSet' | 'targetPositionSet';
+export type CovivaApiMethod = 'turnOnOff' | 'brightnessSet' | 'targetPositionSet' | 'pilotWireModeSet';
 
 // Valid settings for each command
 export type CovivaApiPayload<Method extends CovivaApiMethod> = Method extends 'turnOnOff'
@@ -43,7 +48,9 @@ export type CovivaApiPayload<Method extends CovivaApiMethod> = Method extends 't
     ? { value: number }
     : Method extends 'targetPositionSet'
       ? { value: number }
-      : never;
+      : Method extends 'pilotWireModeSet'
+        ? { value: number }
+        : never;
 
 
 /**********************/
@@ -621,11 +628,9 @@ class Session {
         retVal = true;
         break;
       // Experimental - opt in and get extra debug logs
-/*
-      case NNNN:
+      case PROFILE_ELECTRICAL_HEATING: // Electrical heating (pilot wire / fil pilote)
         retVal = this.enableExperimental;
         break;
-*/
       // Not Supported
       case 1: // Base Station
       case 3014: // Netatmo Weather Base Station
@@ -696,6 +701,10 @@ class Session {
     return retVal;
   }
 
+  public pilotWireSupported(profile: number): boolean {
+    return profile == PROFILE_ELECTRICAL_HEATING;
+  }
+
   public profileName(profile: number): string {
     let retVal = 'Unknown'
 
@@ -708,6 +717,9 @@ class Session {
         break;
       case 15:
         retVal = 'Coviva Dimmer Module';
+        break;
+      case PROFILE_ELECTRICAL_HEATING:
+        retVal = 'Coviva Electrical Heating (pilot wire)';
         break;
       case 3014:
         retVal = 'Netatmo Weather Base Station';
@@ -856,6 +868,11 @@ class Session {
               // Brightness
               this._cachedDevices[i].data.brightness = msg_attribute.target_value;
             }
+            else if (msg_attribute.type == ATTRIBUTE_HVAC_MODE && this.pilotWireSupported(this._cachedDevices[i].profile)) {
+              // Pilot wire mode
+              this._cachedDevices[i].data.hvacmode = msg_attribute.target_value;
+              this.log.info('Pilot wire [%s] mode [%d] (ALL)', this._cachedDevices[i].name, msg_attribute.target_value);
+            }
             else if (msg_attribute.type == 15 && this.blindsSupported(this._cachedDevices[i].profile)) {
               // Position from Coviva  perspective:   0 = fully open, 100 = fully closed
               // Position from HomeKit perspecitve: 100 = fully open,   0 = fully closed
@@ -985,6 +1002,13 @@ class Session {
                   }
 
                   this._cachedDevices[i].data.brightness = new_attribute.target_value;
+                }
+                else if (new_attribute.type == ATTRIBUTE_HVAC_MODE && this.pilotWireSupported(this._cachedDevices[i].profile)) {
+                  if (this._cachedDevices[i].data.hvacmode != new_attribute.target_value) {
+                    this.log.info('Pilot wire [%s] mode changed from [%s] to [%d]', this._cachedDevices[i].name, String(this._cachedDevices[i].data.hvacmode), new_attribute.target_value);
+                    genuine_update = true;
+                  }
+                  this._cachedDevices[i].data.hvacmode = new_attribute.target_value;
                 }
                 else if (new_attribute.type == 15 && this.blindsSupported(this._cachedDevices[i].profile)) {
                   // Position from Coviva  perspective:   0 = fully open, 100 = fully closed
@@ -1260,6 +1284,9 @@ export class CovivaAPI {
         break;
       case 'targetPositionSet':
         attribute_type = 15;
+        break;
+      case 'pilotWireModeSet':
+        attribute_type = ATTRIBUTE_HVAC_MODE;
         break;
       default:
         attribute_type = 0;

@@ -49,6 +49,10 @@ Known Coviva profile numbers:
 * 3015 = Linked Netatmo Outdoor Thermometer
 * 3017 = Linked Netatmo Rain Gauge
 * 3023 = Linked Netatmo Wind Meter
+* 3024 = Electrical Heating Module (pilot wire / "fil pilote") - experimental
+	* Attribute Type 127 = Pilot wire mode [30-34] (observed: 33 = reduced/eco, 34 = frost protection)
+	* Attribute Type 72 = Mode [0-3]
+	* Attribute Type 10 = Window position [0-1]
 * 3026 = Linked Netatmo Welcome Camera
 * 3027 = Linked Netatmo Presence Camera
 
@@ -83,7 +87,8 @@ All options
       "covivaId": "(same as for Coviva App)",
       "pollingInterval": 120,
       "pingInterval": 20,
-      "enableExperimental": false
+      "enableExperimental": false,
+      "pilotWireModes": {"32": "Confort", "33": "Réduit", "34": "Hors gel"}
     }
   }
 ]
@@ -114,6 +119,11 @@ devices, and help with testing.  The default is 'false': experimental devices ar
 This option will also cause the plugin to log all messages sent to/received from the Coviva
 API in the Homebridge log file.
 
+The pilotWireModes option (experimental, profile 3024) sets the names of the switches created
+for each pilot wire mode value.  Each value in the module's range becomes one switch, named
+"<device name> <label>"; exactly one is on at a time.  A value without a label is shown as
+"Mode N", and an empty label hides that value.
+
 ## Tested devices
 
 Tested:
@@ -124,7 +134,7 @@ Tested:
 
 Experimental:
 
-* None
+* Coviva electrical heating module, pilot wire / "fil pilote" (profile 3024)
 
 ## Credits
 

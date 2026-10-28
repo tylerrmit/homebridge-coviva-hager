@@ -57,6 +57,15 @@
             "description": "Enable support for new device types that are still considered 'Experimental'.  These are device types where we have had someone provide information from their Homebridge logs to help us add support, but they have not been tested and verified as working yet.  Default is 'false'.  Set this to 'true' if you are helping to test a new device type.",
             "required": false,
             "default": false
+          },
+          "pilotWireModes": {
+            "title": "Pilot wire mode labels",
+            "type": "object",
+            "description": "Experimental (profile 3024). Labels for the pilot wire mode values reported by Coviva, e.g. {\"32\": \"Confort\", \"33\": \"Réduit\", \"34\": \"Hors gel\"}. An empty label hides that mode. Values without a label are shown as 'Mode N'.",
+            "required": false,
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         }
       }

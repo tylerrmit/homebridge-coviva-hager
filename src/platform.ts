@@ -6,7 +6,8 @@ import {
   BaseAccessory,
   DimmableLightAccessory,
   LightAccessory,
-  BlindsAccessory
+  BlindsAccessory,
+  PilotWireAccessory
 } from './accessories';
 
 import {CovivaHagerConfig} from './config';
@@ -34,6 +35,9 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
   private readonly pingInterval:       number = 60;
   private readonly enableExperimental: boolean = false;
   public  readonly covivaId:           string = '';
+
+  // Optional labels for pilot wire modes, e.g. {"32": "Confort", "33": "Réduit", "34": "Hors gel"}
+  public  readonly pilotWireModes:     { [value: string]: string } = {};
 
   // Object that will handle commands to Coviva API
   public readonly covivaAPI!: CovivaAPI;
@@ -80,10 +84,14 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     }
     else {
       this.enableExperimental = config.options.enableExperimental;
-      this.log.info('Support for experimental device types is enabled');
+      this.log.info('Support for experimental device types is %s', this.enableExperimental ? 'enabled' : 'disabled');
     }
 
     this.covivaId = options.covivaId;
+
+    if (options.pilotWireModes) {
+      this.pilotWireModes = options.pilotWireModes;
+    }
 
     // Create Coviva API instance to handle communication with Coviva
     this.covivaAPI = new CovivaAPI(
@@ -221,7 +229,10 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
     // Construct new accessory
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
-    if (this.covivaAPI.session.brightnessSupported(device.profile)) {
+    if (this.covivaAPI.session.pilotWireSupported(device.profile)) {
+      new PilotWireAccessory(this, homebridgeAccessory, device as any);
+    }
+    else if (this.covivaAPI.session.brightnessSupported(device.profile)) {
       new DimmableLightAccessory(this, homebridgeAccessory, device as any);
     }
     else if (this.covivaAPI.session.blindsSupported(device.profile)) {
