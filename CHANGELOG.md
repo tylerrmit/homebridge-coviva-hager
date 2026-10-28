@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.43 (2026-10-28)
+
+* Add experimental support for electrical heating modules (pilot wire, profile 3024) from Vince01700
+
 ## 0.1.41 (2021-03-05)
 ## 0.1.40 (2021-03-05)
 

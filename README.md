@@ -150,3 +150,5 @@ that will allow you to control it.
 benni4k for providing trace information for the Roller Blind / Shutter module, and working
 through multiple test versions of the plugin to help get support for that type of plugin
 working.
+
+vince01700 for providing support for the Pilot Wire module
