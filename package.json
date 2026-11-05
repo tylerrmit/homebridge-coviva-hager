@@ -44,8 +44,8 @@
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
     "homebridge": "^1.0.0",
-    "rimraf": "^3.0.2",
-    "typescript": "^3.8.3"
+    "rimraf": "^4.4.1",
+    "typescript": "^5.9.3"
   },
   "publishConfig": {
     "access": "public"

@@ -5,7 +5,7 @@ export class DebouncedPromise<PromiseReturnType> {
 
   constructor() {
     this.promise = new Promise<PromiseReturnType>((resolve, reject) => {
-      this.resolve = resolve;
+      this.resolve = resolve as (value?: PromiseReturnType | PromiseLike<PromiseReturnType>) => void;
       this.reject = reject;
     });
   }

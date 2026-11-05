@@ -142,7 +142,7 @@ export abstract class BaseAccessory<DeviceConfig extends Coviva_Node = Coviva_No
     }
     else {
       this.log.debug('Creating New Service %s', this.deviceConfig.id);
-      this.service = this.homebridgeAccessory.addService(this.serviceType, this.deviceConfig.name);
+      this.service = this.homebridgeAccessory.addService(this.serviceType, this.deviceConfig.name, this.deviceConfig.name);
     }
 
     this.homebridgeAccessory.on('identify', this.onIdentify.bind(this));

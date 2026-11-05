@@ -161,8 +161,8 @@ export class CovivaHagerPlatform implements DynamicPlatformPlugin {
         
       }
       catch (e) {
-        this.log.error(e.message);
-        this.log.debug(e);
+        this.log.error(e instanceof Error ? e.message : String(e));
+        this.log.debug(String(e));
       }
     });
   }
